@@ -12,12 +12,25 @@ class PandemicSimulatorMulti(PandemicSimulator):
     def __init__(self, beta, gamma, delta, N, timesteps=400):
         # TODO: inherit this from PandemicSimulator. Therefore get rid of transform_beta or write it as class method.
         self.beta = beta
+        # beta is a matrix of the form 16x16
+        # where every country has one infection rate for every other country 
+        # this is used to simulate e.g. how bavarians can infect berlin ppl if only one side closes the borders
+
+
         self.gamma = gamma
         self.delta = delta
+        # Gamma and delta also are 16x16 but only have one value in the diagonal 
+        # They have to be that way for easy matrix multiplication 
+        # We could do some strange math to do it, but its easier to just make the matrixes
+
         self.N = N
+        # N is a vector
+
         self.timesteps = timesteps
         self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
         self.y0 = None
+        # y0 is a vector which holds a quadruple of (remainingPop,currentInfected,currentRecovered,currentDeath)
+
         self.ndim = beta.shape[0]
 
     @staticmethod
@@ -33,8 +46,15 @@ class PandemicSimulatorMulti(PandemicSimulator):
         assert self.beta.shape == self.gamma.shape == self.delta.shape
 
     def simulate_SEIR(self):
-        # TODO: make this unnecessary. See todo in line 12
-        # TODO: way to much code copied here from base class
+        '''
+        S = Suspectable 
+        I = Infected
+        R = Recovered
+        D = Dead
+        dXdt = derivative of X over time
+
+        The values are being flattened together into one list with *dSdt and the resulting list can be used for solve_ivp
+        '''
         assert self.y0 is not None, "set y0 before calling simluate_SEIR"
         def deriv_multi(t, y):
             S, I, R, D = [y[self.ndim*i:self.ndim*(i+1)] for i in range(4)]
@@ -43,8 +63,10 @@ class PandemicSimulatorMulti(PandemicSimulator):
             dRdt = np.dot(self.gamma, I)
             dIdt = 1/self.N*np.dot(self.beta, I)*S-dDdt-dRdt
             return [*dSdt, *dIdt, *dRdt, *dDdt]
-        return solve_ivp(deriv_multi, (0, self.timesteps - 1), y0=self.y0, t_eval=np.linspace(0, self.timesteps-1,
-                                                                                              self.timesteps))
+        return solve_ivp(deriv_multi, 
+                        (0, self.timesteps - 1), 
+                        y0=self.y0, 
+                        t_eval=np.linspace(0, self.timesteps-1,self.timesteps))
 
     def plot(self, sol):
         fig = plt.figure(facecolor='w', figsize=(20, 10))

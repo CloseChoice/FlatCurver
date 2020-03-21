@@ -13,11 +13,18 @@ class PandemicSimulator:
 
     def __init__(self, beta, gamma, delta, N, timesteps=400):
         # TODO: make beta time dependent
+        # Beta is the rate of infection 
         self.beta = self.transform_beta(beta, timesteps)
+        # Gamma is the recovery rate
         self.gamma = gamma
+        # Delta is the death rate (1-gamma)
         self.delta = delta
+        # N is the population
         self.N = N
+        # How many timestaps should be simulated? 
+        # The curve literally never ends mathematically
         self.timesteps = timesteps
+        # Initial values for y0 as a pair of (Infectable-Population,Recovered Population,Infected-Population,Dead Population)
         self.y0 = [self.N - 1, 0, 1, 0]
         self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
 
@@ -59,10 +66,12 @@ class PandemicSimulator:
         sol = self.simulate_SEIR()
         self.plot(sol)
 
-    def plotting_standards(self, ax):
+    def plotting_standards(self, ax,title=None):
         ax.set_xlabel('Time /days')
         ax.set_ylabel('Number (percent of total population)')
         ax.set_ylim(0, 1.2)
+        if title:
+            ax.set_title(title)
         ax.yaxis.set_tick_params(length=0)
         ax.xaxis.set_tick_params(length=0)
         ax.grid(b=True, which='major', c='w', lw=2, ls='-')
@@ -71,7 +80,7 @@ class PandemicSimulator:
         for spine in ('top', 'right', 'bottom', 'left'):
             ax.spines[spine].set_visible(False)
 
-    def plot(self, sol):
+    def plot(self, sol,title=None):
         fig = plt.figure(facecolor='w', figsize=(20, 10))
         ax = fig.add_subplot(111, axisbelow=True)
         ax.plot(self.dates[sol.t.astype(int)], sol.y[0, :] / self.N, 'b', alpha=0.5, lw=2, label=f'Susceptible')
@@ -79,4 +88,4 @@ class PandemicSimulator:
         ax.plot(self.dates[sol.t.astype(int)], sol.y[2, :] / self.N, 'g', alpha=0.5, lw=2, label=f'Infected')
         ax.plot(self.dates[sol.t.astype(int)], sol.y[3, :] / self.N, 'black', alpha=0.5, lw=2,
                 label=f'Recovered with immunity')
-        self.plotting_standards(ax)
+        self.plotting_standards(ax,title)
