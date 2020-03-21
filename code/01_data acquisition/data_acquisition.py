@@ -248,7 +248,7 @@ class DataAcquisition:
 
     return df
 
-  def fetch_all_data(self, exactitude:int=10) -> pandas.DataFrame:
+  def fetch_all_data(self, breakout_threshold:int=10, exactitude:int=10) -> pandas.DataFrame:
     """
     merges all data together into one big csv
     
@@ -277,7 +277,7 @@ class DataAcquisition:
 
     collecting_df = collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
     self.round_data(collecting_df, df_info, exactitude)
-    self.fill_days_after_breakout(collecting_df, df_info)
+    self.fill_days_after_breakout(collecting_df, df_info, breakout_threshold)
     collecting_df=collecting_df.sort_values(["Datum"],ascending=True)
 
     return collecting_df
@@ -288,7 +288,8 @@ if __name__ == "__main__":
   # parse command line options
   parser = argparse.ArgumentParser(description='Scrape Covid-19 Data for each Bundesland from Morgenpost and RKI.')
   parser.add_argument("--exactitude", default=10, type=int, help="Round the morgenpost:confirmed and RKI:Summe_Infektionen")
+  parser.add_argument("--breakout", default=100, type=int, help="Breakout Threshold for days_after_outbreak field")
   args = parser.parse_args()
   data_acquisition = DataAcquisition()
-  df = data_acquisition.fetch_all_data(args.exactitude)
+  df = data_acquisition.fetch_all_data(args.breakout, args.exactitude)
   df.to_csv('dataset.csv', index = False)
