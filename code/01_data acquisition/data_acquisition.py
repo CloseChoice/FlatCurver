@@ -116,14 +116,34 @@ class DataAcquisition:
 
     return pandas.read_csv(path)
 
+  def fetch_all_data(self) -> pandas.DataFrame:
+    """
+    merges all data together into one big csv
+    
+    Args:
+
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+        cols = ['date','{bundesland}:{source}:{value}','{bundesland}:info:population']
+        source = ['rki', 'morgenpost']
+    """
+    df_info = self.load_general_stats()
+
+    df_all_collumns = ['date']
+    for bundesland in df_info['Bundesland']:
+      df_all_collumns.append(f'{bundesland}:morgenpost:confirmed')
+      df_all_collumns.append(f'{bundesland}:morgenpost:recovered')
+      df_all_collumns.append(f'{bundesland}:morgenpost:deaths')
+      df_all_collumns.append(f'{bundesland}:rki:infections')
+      df_all_collumns.append(f'{bundesland}:rki:deaths')
+      df_all_collumns.append(f'{bundesland}:info:population')
+      print(bundesland)
+
+    df_all = pandas.DataFrame(columns=df_all_collumns)
+    return df_all
+
 
 if __name__ == "__main__":
-  # fetch data for bayern from rki and save to csv
   data_acquisition = DataAcquisition()
-  df = data_acquisition.fetch_bundesland_rki("Bayern")
-  df.to_csv('rki-bayern.csv', index = False)
-
-  # fetch data for bayern from morgenpost and save to csv
-  data_acquisition = DataAcquisition()
-  df = data_acquisition.fetch_bundesland_morgenpost("Bayern")
-  df.to_csv('morgenpost-bayern.csv', index = False)
+  df = data_acquisition.fetch_all_data()
+  df.to_csv('dataset.csv', index = False)

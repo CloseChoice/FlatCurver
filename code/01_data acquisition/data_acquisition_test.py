@@ -36,5 +36,11 @@ class TestStringMethods(unittest.TestCase):
     self.assertGreater(df.shape[0], 0)
     self.assertGreater(df.shape[1], 0)
 
+  def test_fetch_all_data(self):
+    data_acquisition = DataAcquisition()
+    df = data_acquisition.fetch_all_data()
+    self.assertGreater(df.shape[0], 0)
+    self.assertGreater(df.shape[1], 0)
+
 if __name__ == '__main__':
     unittest.main()
