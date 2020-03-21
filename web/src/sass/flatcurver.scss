@@ -1,0 +1,35 @@
+@charset "utf-8";
+
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+
+// brand colors
+$midnight: #096972;
+$midlight: #0c8691;
+$brown: #757763;
+$beige-light: #d0d1cd;
+$beige-lighter: #eff0eb;
+
+// Update Bulma's global variables
+$family-sans-serif: 'Nunito', sans-serif;
+$grey-dark: $brown;
+$grey-light: $beige-light;
+$primary: $midnight;
+$link: $midlight;
+$widescreen-enabled: true;
+$fullhd-enabled: true;
+
+// Update some of Bulma's component variables
+$body-background-color: $beige-lighter;
+
+/// CUSTOM STYLES
+
+.container.full {
+    min-height: 100vh;
+    margin-top: 70px;
+}
+
+@import '../../node_modules/bulma/bulma.sass';
+
+// Custom Additions
+@import './additions';
