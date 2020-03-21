@@ -12,6 +12,7 @@ import io
 
 # additional packages
 import pandas
+import numpy as np
 
 def fetch_infection_data_from_rki(bundesland:str="Hamburg",offset=0):
     """
@@ -226,6 +227,22 @@ class DataAcquisition:
 
     return df
 
+  def round_data(self, df, df_info, exactitude:int=10) -> pandas.DataFrame:
+    """
+    finds day of outbreak by comparing with a threshold and calcs DaysAfterOutbreak
+    
+    Args:
+      df: historical data for each bundesland, a Dataframe
+      exactitude: round(value / exactitude) * exactitude, a int
+
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+    """
+    for bundesland in df_info['Bundesland']:
+      df[f'{bundesland}:morgenpost:confirmed'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda v: np.round(v/exactitude)*exactitude)
+
+    return df
+
   def fetch_all_data(self) -> pandas.DataFrame:
     """
     merges all data together into one big csv
@@ -255,10 +272,11 @@ class DataAcquisition:
 
     collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
 
+    self.round_data(collecting_df, df_info)
+
     self.fill_days_after_breakout(collecting_df, df_info)
 
     return collecting_df
-
 
 
 if __name__ == "__main__":
