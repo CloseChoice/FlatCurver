@@ -116,6 +116,22 @@ class DataAcquisition:
 
     return pandas.read_csv(path)
 
+  def fill_days_after_breakout(self, df, df_info, threshold:int=100) -> pandas.DataFrame:
+    """
+    finds day of outbreak by comparing with a threshold and calcs DaysAfterOutbreak
+    
+    Args:
+      df: historical data for each bundesland, a Dataframe
+      threshold: number of infections threshold for outbreak definition
+
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+    """
+    for bundesland in df_info['Bundesland']:
+      df[f'{bundesland}:rki:days_after_outbreak'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda x: x>threshold).cumsum()
+
+    return df
+
   def fetch_all_data(self) -> pandas.DataFrame:
     """
     merges all data together into one big csv
@@ -128,7 +144,6 @@ class DataAcquisition:
         source = ['rki', 'morgenpost']
     """
     df_info = self.load_general_stats()
-    print(df_info)
 
     # create dataframe layout
     df_all_collumns = ['date']
@@ -136,6 +151,7 @@ class DataAcquisition:
       df_all_collumns.append(f'{bundesland}:morgenpost:confirmed')
       df_all_collumns.append(f'{bundesland}:morgenpost:recovered')
       df_all_collumns.append(f'{bundesland}:morgenpost:deaths')
+      df_all_collumns.append(f'{bundesland}:morgenpost:days_after_outbreak')
       df_all_collumns.append(f'{bundesland}:rki:infections')
       df_all_collumns.append(f'{bundesland}:rki:deaths')
       df_all_collumns.append(f'{bundesland}:info:population')
@@ -172,6 +188,8 @@ class DataAcquisition:
 
       start_date += delta
       row_index += 1
+
+    self.fill_days_after_breakout(df_all, df_info)
 
     return df_all
 
