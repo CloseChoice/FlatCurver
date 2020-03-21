@@ -180,6 +180,8 @@ f_lme <- formula(paste(c(
 ), collapse = "~"))
 mod_lme <- lmer(f_lme, data = dtDEconfirmed)
 summary(mod_lme)
+# Bis auf die Maßnahmen schutz_gef_personen und pandemieplan ist der Effekt wie erwünscht negativ, die Paramter sind allerdings nicht alle signifikant verschieden von Null
+
 
 # Füge gefittete Werte zum Datensatz hinzu
 dtDEconfirmed[, yhat_lme := fitted(mod_lme)]
