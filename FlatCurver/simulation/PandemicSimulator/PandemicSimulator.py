@@ -13,7 +13,7 @@ class PandemicSimulator:
 
     def __init__(self, beta, gamma, delta, N, timesteps=400):
         # TODO: make beta time dependent
-        self.beta = [beta] * timesteps if not isinstance(beta, np.array) else beta
+        self.beta = self.transform_beta(beta, timesteps)
         self.gamma = gamma
         self.delta = delta
         self.N = N
@@ -22,6 +22,10 @@ class PandemicSimulator:
         self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
 
         self.assertions()
+
+    @staticmethod
+    def transform_beta(beta, timesteps):
+        return [beta] * timesteps if not isinstance(beta, np.array) else beta
 
     def sinusoidal_decay(self, seasonality, length):
         R0 = 2
