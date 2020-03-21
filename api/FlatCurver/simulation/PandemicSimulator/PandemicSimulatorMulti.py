@@ -6,10 +6,21 @@ from scipy.integrate import solve_ivp
 
 from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
 
+def vhelp(x):
+    # used to help with delta to gamma
+    # gamma is always 1-delta, except if gamma is 0 then we usually have an error (lol)
+    y = round(1-x,2)
+    if y >= 0.999:
+        return 0
+    else:
+        return y
+
+vfunc = np.vectorize(lambda x: vhelp(x))
+
 
 class PandemicSimulatorMulti(PandemicSimulator):
 
-    def __init__(self, beta, gamma, delta, N, timesteps=400,names=None):
+    def __init__(self, beta, gamma, delta, N, timesteps=400,names=None,hospital_rates=None,lethality_factor=1):
         # TODO: inherit this from PandemicSimulator. Therefore get rid of transform_beta or write it as class method.
         self.beta = beta
         # beta is a matrix of the form 16x16
@@ -35,6 +46,12 @@ class PandemicSimulatorMulti(PandemicSimulator):
         # Store the names of each dimensions
         # These could be for example bundeslaender or age-groups
         self.ndim = beta.shape[0]
+
+        self.hospital_rates = hospital_rates 
+        # A percentage how many people of the population can be infected at once without applying the additional lethality factor
+        # Hospital_rates are also a n-dimensional vector
+        self.lethality_factor = lethality_factor
+        # A coefficient to the lethality if the hospital_rates are exceeded
 
     @staticmethod
     def transform_beta(beta, timesteps):
@@ -64,8 +81,21 @@ class PandemicSimulatorMulti(PandemicSimulator):
         def deriv_multi(t, y):
             S, I, R, D = [y[self.ndim*i:self.ndim*(i+1)] for i in range(4)]
             dSdt = -1*np.dot(self.beta, I/self.N)*S
-            dDdt = np.dot(self.delta, I)
-            dRdt = np.dot(self.gamma, I)
+            
+            # To apply the correct number of deaths and recoveries, we make a temporary copy 
+            # We change values where fit and calculate current deaths and recoveries 
+            # for further use in the function we pass the normal deltas
+            temp_delta = self.delta.copy()
+
+            if self.hospital_rates and self.lethality_factor:
+                for i in range(len(I)):
+                    if I[i]>self.hospital_rates[i]:
+                        temp_delta[i][i] = self.delta[i][i]*self.lethality_factor
+            temp_gamma = vfunc(temp_delta)
+
+            dDdt = np.dot(temp_delta, I)
+            dRdt = np.dot(temp_gamma, I)
+
             dIdt = 1/self.N*np.dot(self.beta, I)*S-dDdt-dRdt
             return [*dSdt, *dIdt, *dRdt, *dDdt]
         return solve_ivp(deriv_multi, 
@@ -81,12 +111,12 @@ class PandemicSimulatorMulti(PandemicSimulator):
                 ax.plot(sol.t, sol.y[i, :] / self.N[i], 'b', alpha=0.5, lw=2, label=f'Susceptible_{self.names[i]}')
                 ax.plot(sol.t, sol.y[self.ndim + i, :] / self.N[i], 'r', alpha=0.5, lw=2, label=f'Infected_{self.names[i]}')
                 ax.plot(sol.t, sol.y[2 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Recovered with immunity_{self.names[i]}')
-                ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Dead_{self.names[i]}')
+                ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'black', alpha=0.5, lw=2, label=f'Dead_{self.names[i]}')
                 self.plotting_standards(ax,self.names[i])
             else:
                 ax.plot(sol.t, sol.y[i, :] / self.N[i], 'b', alpha=0.5, lw=2, label=f'Susceptible_{i}')
                 ax.plot(sol.t, sol.y[self.ndim + i, :] / self.N[i], 'r', alpha=0.5, lw=2, label=f'Infected_{i}')
                 ax.plot(sol.t, sol.y[2 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Recovered with immunity_{i}')
-                ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Dead_{i}')
+                ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'black', alpha=0.5, lw=2, label=f'Dead_{i}')
                 self.plotting_standards(ax)
             plt.show()
