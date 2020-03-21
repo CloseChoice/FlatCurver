@@ -207,6 +207,25 @@ class DataAcquisition:
 
     return pandas.read_csv(path)
 
+  def fill_days_after_breakout(self, df, df_info, threshold:int=100) -> pandas.DataFrame:
+    """
+    finds day of outbreak by comparing with a threshold and calcs DaysAfterOutbreak
+    
+    Args:
+      df: historical data for each bundesland, a Dataframe
+      threshold: number of infections threshold for outbreak definition
+
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+    """
+    for bundesland in df_info['Bundesland']:
+      df[f'{bundesland}:morgenpost:days_after_outbreak'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda x: x>threshold).cumsum()
+      
+    for bundesland in df_info['Bundesland']:
+      df[f'{bundesland}:RKI:days_after_outbreak'] = df[f'{bundesland}:RKI:Summe_Infektionen'].apply(lambda x: x>threshold).cumsum()
+
+    return df
+
   def fetch_all_data(self) -> pandas.DataFrame:
     """
     merges all data together into one big csv
@@ -220,12 +239,11 @@ class DataAcquisition:
     """
     df_info = self.load_general_stats()
     
-
     collecting_df =  bland_df = self.fetch_bundesland_morgenpost(df_info['Bundesland'][0])
-    collecting_df.columns = ["Datum"]+[f"{df_info['Bundesland'][1]}:morgenpost:{c}" for c in collecting_df.columns if c != "date"]
+    collecting_df.columns = ["Datum"]+[f"{df_info['Bundesland'][0]}:morgenpost:{c}" for c in collecting_df.columns if c != "date"]
     collecting_df['Datum'] = collecting_df['Datum'].astype('datetime64[ns]')
 
-    for bundesland in df_info['Bundesland'][2:]:
+    for bundesland in df_info['Bundesland'][1:]:
       bland_df = self.fetch_bundesland_morgenpost(bundesland)
       bland_df.columns = ["Datum"]+[f"{bundesland}:morgenpost:{c}" for c in bland_df.columns if c != "date"]
       bland_df['Datum'] = bland_df['Datum'].astype('datetime64[ns]')
@@ -235,7 +253,12 @@ class DataAcquisition:
 
     collecting_df = collecting_df.merge(df_rki,how="outer",on="Datum",suffixes=(False,False))
 
+    collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
+
+    self.fill_days_after_breakout(collecting_df, df_info)
+
     return collecting_df
+
 
 
 if __name__ == "__main__":
