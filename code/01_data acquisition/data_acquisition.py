@@ -16,49 +16,140 @@ import pandas
 class DataAcquisition:
   """An Utility class for data acquisition."""
 
-  def fetch_bundesland_rki(self, bundesland:str="Hamburg") -> pandas.DataFrame:
-    """
-    Fetch Covid-19-Cases a bundesland from 
-    https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
-    
-    Args:
-        bundesland: written like displayed on the website, a string
-    Returns:
-        a Dataframe containing all historical data from a bundesland
-        cols = ['date','AnzahlFall']
-    """
-    
-    # build query url
-    url_endpoint = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_COVID19/FeatureServer/0/query"
+  def fetch_infection_data_from_rki(bundesland:str="Hamburg",offset=0):
+      """
+      Fetch Covid-19-Cases from 
+      https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
+      
+      Args:
+          bundesland: written like displayed on the website, a string
+      Returns:
+          a Dataframe containing all historical infections data of a bundesland
+      """
+      
+      url_endpoint = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_COVID19/FeatureServer/0/query"
+      params = {
+          'f': 'json', 
+          'where': f'Bundesland=\'{bundesland}\'',
+          'returnGeometry': 'false',
+          'spatialRel': 'esriSpatialRelIntersects',
+          'outFields': 'ObjectId,AnzahlFall,Meldedatum,Geschlecht,Altersgruppe',
+          'orderByFields': 'Meldedatum asc',
+          'resultOffset': offset,
+          'resultRecordCount': 2000,
+          'cacheHint': "true"    
+      }
 
-    params = {
-        'f': 'json', 
-        'where': f'Bundesland=\'{bundesland}\'',
-        'returnGeometry': 'false',
-        'spatialRel': 'esriSpatialRelIntersects',
-        'outFields': 'ObjectId,AnzahlFall,Meldedatum',
-        'orderByFields': 'Meldedatum asc',
-        'resultOffset': 0,
-        'resultRecordCount': 2000,
-        'cacheHint': "true"    
-    }
+      url_query = f"{url_endpoint}?{urllib.parse.urlencode(params)}"
 
-    url_query = f"{url_endpoint}?{urllib.parse.urlencode(params)}"
-    print(url_query)
+      with urllib.request.urlopen(url_query) as url:
+          data = json.loads(url.read().decode())['features']
+      
+      data_list = [
+          (datetime.datetime.fromtimestamp(x['attributes']['Meldedatum'] / 1e3), x['attributes']['AnzahlFall'],x['attributes']['Geschlecht'],x['attributes']['Altersgruppe'],bundesland) 
+          for x in data
+      ]
+      
+      df = pandas.DataFrame(data_list, columns=['Meldedatum', 'Neuinfektionen', 'Geschlecht','Altersgruppe','Bundesland'])
 
-    # get data from api
-    with urllib.request.urlopen(url_query) as url:
-        data = json.loads(url.read().decode())['features']
-    
-    # convert timestamps and format data into a DataFrame
-    data_list = [
-        (datetime.datetime.fromtimestamp(x['attributes']['Meldedatum'] / 1e3), x['attributes']['AnzahlFall']) 
-        for x in data
-    ]
+      if len(data_list)>= 2000:
+          df = df.append(fetch_infection_data_from_rki(bundesland,offset+2000))
+      
+      return df
 
-    df = pandas.DataFrame(data_list, columns=['date', 'AnzahlFall'])
+  def fetch_death_data_from_rki(bundesland:str="Hamburg",offset=0):
+      """
+      Fetch Covid-19-Cases from 
+      https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
+      
+      Args:
+          bundesland: written like displayed on the website, a string
+      Returns:
+          a Dataframe containing all historical infections data of a bundesland
+      """
+      
+      url_endpoint = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_COVID19/FeatureServer/0/query"
+      params = {
+          'f': 'json', 
+          'where': f'Bundesland=\'{bundesland}\' AND AnzahlTodesfall>0',
+          'returnGeometry': 'false',
+          'spatialRel': 'esriSpatialRelIntersects',
+          'outFields': 'ObjectId,AnzahlTodesfall,Meldedatum,Geschlecht,Altersgruppe',
+          'orderByFields': 'Meldedatum asc',
+          'resultOffset': offset,
+          'resultRecordCount': 2000,
+          'cacheHint': "true"    
+      }
 
-    return df
+      url_query = f"{url_endpoint}?{urllib.parse.urlencode(params)}"
+
+      with urllib.request.urlopen(url_query) as url:
+          data = json.loads(url.read().decode())['features']
+      
+      data_list = [
+          (datetime.datetime.fromtimestamp(x['attributes']['Meldedatum'] / 1e3), x['attributes']['AnzahlTodesfall'],x['attributes']['Geschlecht'],x['attributes']['Altersgruppe'],bundesland) 
+          for x in data
+      ]
+      
+      df = pandas.DataFrame(data_list, columns=['Meldedatum', 'Todesfaelle', 'Geschlecht','Altersgruppe','Bundesland'])
+
+      if len(data_list)>= 2000:
+          df = df.append(fetch_death_data_from_rki(bundesland,offset+2000))
+      
+      return df
+
+
+  flatten = lambda l: [item for sublist in l for item in sublist]
+
+  def get_all_dates_sorted(all_death_data,all_infection_data):
+      infections_dates = set(all_infection_data.Meldedatum.unique())
+      death_dates =  set(all_death_data.Meldedatum.unique())
+      all_dates = list(infections_dates.union(death_dates))
+      all_dates.sort()
+      return all_dates
+
+  def get_pivoted_country_data(all_death_data,all_infection_data):
+      dates = get_all_dates_sorted(all_death_data,all_infection_data)
+      bundeslaender = ["Baden-Württemberg","Nordrhein-Westfalen","Bayern","Hessen","Berlin",
+                  "Niedersachsen","Sachsen","Rheinland-Pfalz","Brandenburg","Hamburg","Schleswig-Holstein"
+                  ,"Thüringen","Mecklenburg-Vorpommern","Bremen","Saarland","Sachsen-Anhalt"]
+
+      grouped_infection_data = all_infection_data.groupby(["Meldedatum","Bundesland"])
+      grouped_death_data = all_death_data.groupby(["Meldedatum","Bundesland"])
+      
+      data = []
+      for date in dates:
+          row = [date]
+          for bland in bundeslaender:
+              try:
+                  i_value = grouped_infection_data.get_group((date,bland)).sum()
+                  row= row +[i_value['Neuinfektionen']]
+              except(KeyError):
+                  row= row +[0]
+              try:
+                  i_value = grouped_death_data.get_group((date,bland)).sum()
+                  row= row +[i_value['Todesfaelle']]
+              except(KeyError):
+                  row= row +[0]
+          data = data + [row]
+      
+      columns = ["Datum"]
+      columns = columns + flatten([[f"RKI:Infektionen:{bland}",f"RKI:Todesfaelle:{bland}"] for bland in bundeslaender])
+      
+      df = pandas.DataFrame(data,columns=columns)
+      
+      for bland in bundeslaender:
+          df[f'RKI:Summe_Infektionen:{bland}']= df[f'RKI:Infektionen:{bland}'].cumsum()
+          df[f'RKI:Summe_Todesfaelle:{bland}']= df[f'RKI:Todesfaelle:{bland}'].cumsum()
+          # remove deaths from infections
+          df[f'RKI:Summe_Infektionen:{bland}']= df.apply(lambda row: row[f'RKI:Summe_Infektionen:{bland}'] - row[f'RKI:Summe_Todesfaelle:{bland}'] , axis = 1)
+
+      return df
+
+  def fetch_rki_data_mergable (self) -> pandas.DataFrame:
+    rki_infection_data = fetch_infection_data_from_rki()
+    rki_death_data = fetch_death_data_from_rki()
+    return get_pivoted_country_data(rki_death_data,rki_infection_data)
 
   def fetch_germany_morgenpost(self) -> pandas.DataFrame:
     """
