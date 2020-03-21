@@ -1,4 +1,2 @@
 jupyter
-numpy
 pandas
-beautifulsoup4

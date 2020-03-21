@@ -144,4 +144,4 @@ static
 
 
 # ignore data files
-.csv
+*.csv
