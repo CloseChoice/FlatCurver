@@ -12,6 +12,7 @@ import io
 
 # additional packages
 import pandas
+import numpy as np
 
 class DataAcquisition:
   """An Utility class for data acquisition."""
@@ -135,6 +136,22 @@ class DataAcquisition:
 
     return df
 
+  def round_data(self, df, df_info, exactitude:int=10) -> pandas.DataFrame:
+    """
+    finds day of outbreak by comparing with a threshold and calcs DaysAfterOutbreak
+    
+    Args:
+      df: historical data for each bundesland, a Dataframe
+      exactitude: round(value / exactitude) * exactitude, a int
+
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+    """
+    for bundesland in df_info['Bundesland']:
+      df[f'{bundesland}:morgenpost:confirmed'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda v: np.round(v/exactitude)*exactitude)
+
+    return df
+
   def fetch_all_data(self) -> pandas.DataFrame:
     """
     merges all data together into one big csv
@@ -191,6 +208,8 @@ class DataAcquisition:
 
       start_date += delta
       row_index += 1
+
+    self.round_data(df_all, df_info)
 
     self.fill_days_after_breakout(df_all, df_info)
 
