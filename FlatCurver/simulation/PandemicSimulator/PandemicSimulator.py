@@ -25,7 +25,7 @@ class PandemicSimulator:
 
     @staticmethod
     def transform_beta(beta, timesteps):
-        return [beta] * timesteps if not isinstance(beta, np.array) else beta
+        return [beta] * timesteps if type(beta) != np.array else beta
 
     def sinusoidal_decay(self, seasonality, length):
         R0 = 2
