@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.integrate import solve_ivp
 
 
-from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
+from . import PandemicSimulator
 
 
 class PandemicSimulatorMulti(PandemicSimulator):
