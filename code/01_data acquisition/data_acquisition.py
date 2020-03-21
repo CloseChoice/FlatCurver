@@ -9,6 +9,7 @@ import urllib
 import json
 import datetime
 import io
+import argparse
 
 # additional packages
 import pandas
@@ -242,9 +243,12 @@ class DataAcquisition:
     for bundesland in df_info['Bundesland']:
       df[f'{bundesland}:morgenpost:confirmed'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda v: np.round(v/exactitude)*exactitude)
 
+    for bundesland in df_info['Bundesland']:
+      df[f'{bundesland}:RKI:Summe_Infektionen'] = df[f'{bundesland}:RKI:Summe_Infektionen'].apply(lambda v: np.round(v/exactitude)*exactitude)
+
     return df
 
-  def fetch_all_data(self) -> pandas.DataFrame:
+  def fetch_all_data(self, exactitude:int=10) -> pandas.DataFrame:
     """
     merges all data together into one big csv
     
@@ -272,7 +276,7 @@ class DataAcquisition:
     collecting_df = collecting_df.merge(df_rki,how="outer",on="Datum",suffixes=(False,False))
 
     collecting_df = collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
-    self.round_data(collecting_df, df_info)
+    self.round_data(collecting_df, df_info, exactitude)
     self.fill_days_after_breakout(collecting_df, df_info)
     collecting_df=collecting_df.sort_values(["Datum"],ascending=True)
 
@@ -280,6 +284,11 @@ class DataAcquisition:
 
 
 if __name__ == "__main__":
+    
+  # parse command line options
+  parser = argparse.ArgumentParser(description='Scrape Covid-19 Data for each Bundesland from Morgenpost and RKI.')
+  parser.add_argument("--exactitude", default=10, type=int, help="Round the morgenpost:confirmed and RKI:Summe_Infektionen")
+  args = parser.parse_args()
   data_acquisition = DataAcquisition()
-  df = data_acquisition.fetch_all_data()
+  df = data_acquisition.fetch_all_data(args.exactitude)
   df.to_csv('dataset.csv', index = False)
