@@ -29,8 +29,8 @@ DT_measures[is.na(gueltig_bis), gueltig_bis := DT[, max(date)] + 1]
 
 measures <- lapply(DT_measures[, unique(measure)], function (m) {
   tmp <- DT_measures[measure == m]
-  tmp[, measure := as.logical(TRUE)]
-  setnames(tmp, "measure", m)
+  tmp[, measure := NULL]
+  tmp[, c(m) := gueltig_ab]
   N <- tmp[, .N, by = bundesland][N > 1]
   if (NROW(N) > 0) {
     # <TODO> In Zukuft muss hier ein Vergleich über den ganzen Zeitraum erfolgen!
@@ -48,11 +48,26 @@ for (m in names(measures)) {
   n0 <- nrow(tmp)
   cols_initial <- colnames(tmp)
   tmp <- foverlaps(tmp, measures[[m]], by.x = c("bundesland", "date", "date_helper"), by.y = c("bundesland", "gueltig_ab", "gueltig_bis"))
-  tmp[is.na(get(m)), c(m) := FALSE]
+#  tmp[get(m) == "1970-01-01", c(m) := NA]
+  tmp[!is.na(get(m)), tmp := as.numeric(difftime(get("date"), get(m), units = "days")) + 1]
+  ranges <- tmp[, .(start = which.min(tmp), end = which.max(tmp)), by = .(bundesland, status)]
+  tmp[, i := 1:.N, by = .(bundesland, status)]
+  for (B in ranges[, unique(bundesland)]) {
+    for (S in ranges[, unique(status)]) {
+      tmp[(bundesland == B) & (status == S) & i < ranges[(bundesland == B) & (status == S), start], tmp := 0]
+      # <TODO> Das Ende muss auch berücksichtigt werden!
+    }
+  }
+  tmp[is.na(tmp), tmp := 0]
+  tmp[, c(m) := NULL]
+  setnames(tmp, "tmp", m)
   tmp <- tmp[, c(cols_initial, m), with = FALSE]
+  
   if (nrow(tmp) != n0) { print("stop!"); break() }
 }
 tmp <- tmp[, -"date_helper", with = FALSE]
+
+
 dtDE <- tmp
 
 setorder(dtDE, bundesland, status, date)
@@ -78,14 +93,77 @@ dtDE[, correction := NULL]
 ggplot(dtDE, aes(x = date, y = number, col = status)) + geom_line() + facet_wrap(~ label, scales = "free_y") + scale_y_continuous(trans = "log")
 
 
-dtDEconfirmed <- dtDE[status == "confirmed"]
-#dtDEconfirmed[, rate := (number - shift(number, 1)) / (shift(number, 1) - shift(number, 2))]
-dtDEconfirmed[, lograte := (log(number) - shift(log(number), 1)) / (shift(log(number), 1) - shift(log(number), 2))]
-dtDEconfirmed[, day := as.numeric(difftime(date, .SD[1, date], units = "days")), by = bundesland]
-dtDEconfirmed <- na.omit(dtDEconfirmed)
-dtDEconfirmed <- dtDEconfirmed[day > 0]
 
-ggplot(dtDEconfirmed, aes(x = day, y = lograte))+ geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + facet_wrap(~ bundesland)
+# Datensatz für nur Infektionen
+dtDEconfirmed <- dtDE[status == "confirmed"]
+
+# Normalisiere Datum auf Tage seit Erstinfektion
+dtDEconfirmed[, day := as.numeric(difftime(date, .SD[1, date], units = "days")), by = bundesland]
+
+# Fallzahlen logarithmieren (und glätten)
+dtDEconfirmed[, number_log := log(number)]
+dtDEconfirmed[, number_log_smooth := predict(loess(number_log ~ day, span = 10 / .N)), by = bundesland]
+
+ggplot(melt(dtDEconfirmed[, .(bundesland, day, number_log, number_log_smooth)], id.vars = c("bundesland", "day")), aes(x = day, y = value, col = variable)) + geom_line() + facet_wrap(~ bundesland)
+
+# Wachstumsraten
+dtDEconfirmed[, lograte := (number_log - shift(number_log, 1)) / (shift(number_log, 1) - shift(number_log, 2))]
+dtDEconfirmed[, lograte_smooth := (number_log_smooth - shift(number_log_smooth, 1)) / (shift(number_log_smooth, 1) - shift(number_log_smooth, 2))]
+
+dtDEconfirmed <- na.omit(dtDEconfirmed)
+dtDEconfirmed <- dtDEconfirmed[day > 1]
+
+# Verlauf der Rate der logarithmierten Fallzahlen (mit Glättung)
+ggplot(dtDEconfirmed, aes(x = day, y = lograte_smooth)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + facet_wrap(~ bundesland, scales = "free_y") + geom_smooth(method = "loess", n = 10)
+
+# Auch die auf Basis geglätteter Fallzahlen ermittlete Rate wird nun geglättet
+dtDEconfirmed[, lograte_smooth2 := predict(loess(lograte_smooth ~ day, span = 10 / .N)), by = bundesland]
+
+ggplot(dtDEconfirmed, aes(x = day, y = lograte_smooth2)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + facet_wrap(~ bundesland, scales = "free_y")
+
+# Geglättete Änderungsraten mit Maßnahmen
+dt_plot <- dtDEconfirmed
+dt_plot_measures <- merge(DT_measures[, .(gueltig_ab, bundesland, measure)], dtDE[, .(date0 = min(date)), by = bundesland], by = "bundesland")[, .(bundesland, measure, day = as.numeric(difftime(gueltig_ab, date0, units = "days")))]
+ggplot(dt_plot, aes(x = day, y = lograte_smooth2)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, col = measure)) + facet_wrap(~ bundesland, scales = "free_y")
+
+
+
+# Inkubationszeit ist 4-14 Tage.  Anstatt Dummyvariablen für die Maßnahmen zu verwenden wird die Anzahl der Tage seit Einführung der Maßnahme geteilt durch 14, aber nach oben auf 1 beschränkt, verwendet für das OLS-Modell.  Für das GAM wird die Anzahl der Tage seit Einführung verwendet
+
+
+
+
+
+
+# Modellierung
+
+# Lineares gemischtes Modell
+library("lme4")
+response <- "number_log_smooth"
+vars_random <- c("day")
+vars_fixed <- names(measures)[dtDEconfirmed[, lapply(.SD, function (x) mean(x == FALSE)), .SDcols = names(measures)] < 0.95]
+f_lme <- formula(paste(c(
+  response,
+  paste(c(
+    paste(vars_fixed),
+    paste0("(", paste(vars_random, sep = "|bundesland)+"), "|bundesland)")
+  ), collapse = "+")
+), collapse = "~"))
+mod_lme <- lmer(f_lme, data = dtDEconfirmed)
+summary(mod_lme)
+
+# Füge gefittete Werte zum Datensatz hinzu
+dtDEconfirmed[, yhat_lme := fitted(mod_lme)]
+
+dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, rate = number_log_smooth, estimate = yhat_lme)], id.vars = c("bundesland", "day"))
+dt_plot_measures <- merge(DT_measures[, .(gueltig_ab, bundesland, measure)], dtDE[, .(date0 = min(date)), by = bundesland], by = "bundesland")[, .(bundesland, measure, day = as.numeric(difftime(gueltig_ab, date0, units = "days")))]
+ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
+
+
+
+
+
+
 
 
 # Wie ist eine theoretische infektionskurve (mit dunkelziffern)
@@ -93,3 +171,8 @@ ggplot(dtDEconfirmed, aes(x = day, y = lograte))+ geom_hline(yintercept = 1, col
 # herausfinden, weclhe maßnahmen welchen effekt hat
   # infektionsrate?
   # verschobene testzeitpunkt?
+
+ggplot(dtDEconfirmed, aes(x = date, y = number)) + geom_line() + facet_wrap(~ label, scales = "free_y") + scale_y_continuous(trans = "log") + geom_smooth(method="loess",n=5)
+
+ggplot(dtDEconfirmed, aes(x = date, y = a)) + geom_line() + facet_wrap(~ label, scales = "free_y")
+
