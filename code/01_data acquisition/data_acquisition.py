@@ -16,9 +16,9 @@ import pandas
 class DataAcquisition:
   """An Utility class for data acquisition."""
 
-  def fetch_data_from_rki(self, bundesland:str="Hamburg"):
+  def fetch_bundesland_rki(self, bundesland:str="Hamburg"):
     """
-    Fetch Covid-19-Cases from 
+    Fetch Covid-19-Cases a bundesland from 
     https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
     
     Args:
@@ -60,13 +60,13 @@ class DataAcquisition:
 
     return df
 
-  def fetch_data_from_morgenpost(self, bundesland:str="Hamburg"):
+  def fetch_germany_morgenpost(self):
     """
-    Fetch Covid-19-Cases from 
+    Fetch Covid-19-Cases for Germany from 
     https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
     
     Args:
-        bundesland: written like displayed on the website, a string
+
     Returns:
         a Dataframe containing all historical data from a bundesland
         cols = ['date','confirmed','recovered', 'deaths']
@@ -80,6 +80,21 @@ class DataAcquisition:
     # read csv from string
     df = pandas.read_csv(io.StringIO(csv_string))
 
+    return df
+
+  def fetch_bundesland_morgenpost(self, bundesland:str="Hamburg"):
+    """
+    Fetch Covid-19-Cases for a bundeland from 
+    https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
+    
+    Args:
+        bundesland: written like displayed on the website, a string
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+        cols = ['date','confirmed','recovered', 'deaths']
+    """
+    df = self.fetch_germany_morgenpost()
+
     # filter by bundesland
     df_bundesland = df[df['label']==bundesland]
 
@@ -92,10 +107,10 @@ class DataAcquisition:
 if __name__ == "__main__":
   # fetch data for bayern from rki and save to csv
   data_acquisition = DataAcquisition()
-  df = data_acquisition.fetch_data_from_rki("Bayern")
+  df = data_acquisition.fetch_bundesland_rki("Bayern")
   df.to_csv('rki-bayern.csv', index = False)
 
   # fetch data for bayern from morgenpost and save to csv
   data_acquisition = DataAcquisition()
-  df = data_acquisition.fetch_data_from_morgenpost("Bayern")
+  df = data_acquisition.fetch_bundesland_morgenpost("Bayern")
   df.to_csv('morgenpost-bayern.csv', index = False)
