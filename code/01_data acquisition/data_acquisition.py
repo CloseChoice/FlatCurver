@@ -270,11 +270,10 @@ class DataAcquisition:
 
     collecting_df = collecting_df.merge(df_rki,how="outer",on="Datum",suffixes=(False,False))
 
-    collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
-
+    collecting_df = collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
     self.round_data(collecting_df, df_info)
-
     self.fill_days_after_breakout(collecting_df, df_info)
+    collecting_df=collecting_df.sort_values(["Datum"],ascending=True)
 
     return collecting_df
 
