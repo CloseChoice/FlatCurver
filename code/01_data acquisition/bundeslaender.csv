@@ -1,17 +1,17 @@
-Bundesland, Einwohner
-Nordrhein-Westfalen, 17865516
-Bayern, 12843514
-Baden-Württemberg, 10879618
-Niedersachsen, 7926599
-Hessen,	6176172
-Sachsen, 4084851
-Rheinland-Pfalz, 4052803
-Berlin, 3520031
-Schleswig-Holstein, 2858714
-Brandenburg, 2484826
-Sachsen-Anhalt, 2245470
-Thüringen, 2170714
-Hamburg	1787408
-Mecklenburg-Vorpommern, 1612362
-Saarland, 995597
-Bremen, 671489
+Bundesland,Population,Area,PopulationDensity,BIP,UnemploymentRate
+Nordrhein-Westfalen,17865516,34112.31,526,705.1,6.4
+Bayern,12843514,70541.57,185,625.1,2.7
+Baden-Württemberg,10879618,35748.22,310,493,3.1
+Niedersachsen,7926599,47709.5,168,288,4.8
+Hessen,6176172,21115.68,297,292,4.2
+Sachsen,4084851,18449.96,221,121,5
+Rheinland-Pfalz,4052803,19858,206,144,4.2
+Berlin,3520031,891.12,4088,147,8
+Schleswig-Holstein,2858714,15804.3,183,93.4,4.9
+Brandenburg,2484826,29654.48,85,69.132,5.4
+Sachsen-Anhalt,2245470,20454.31,108,60.1,6.6
+Thüringen,2170714,16202.37,133,61.91,4.9
+Hamburg,1787408,755.09,2430,117.6,6
+Mecklenburg-Vorpommern,1612362,23294.62,69,42.78,6.7
+Saarland,995597,2571.11,385,35.3,6
+Bremen,671489,419.36,1749,34.294,10.2
