@@ -131,15 +131,15 @@ def get_pivoted_country_data(all_death_data,all_infection_data):
         data = data + [row]
     
     columns = ["Datum"]
-    columns = columns + flatten([[f"RKI:Infektionen:{bland}",f"RKI:Todesfaelle:{bland}"] for bland in bundeslaender])
+    columns = columns + flatten([[f"{bland}:RKI:Neuinfektionen",f"{bland}:RKI:Todesfaelle"] for bland in bundeslaender])
     
     df = pandas.DataFrame(data,columns=columns)
     
     for bland in bundeslaender:
-        df[f'RKI:Summe_Infektionen:{bland}']= df[f'RKI:Infektionen:{bland}'].cumsum()
-        df[f'RKI:Summe_Todesfaelle:{bland}']= df[f'RKI:Todesfaelle:{bland}'].cumsum()
+        df[f'{bland}:RKI:Summe_Infektionen']= df[f'{bland}:RKI:Neuinfektionen'].cumsum()
+        df[f'{bland}:RKI:Summe_Todesfaelle']= df[f'{bland}:RKI:Todesfaelle'].cumsum()
         # remove deaths from infections
-        df[f'RKI:Summe_Infektionen:{bland}']= df.apply(lambda row: row[f'RKI:Summe_Infektionen:{bland}'] - row[f'RKI:Summe_Todesfaelle:{bland}'] , axis = 1)
+        df[f'{bland}:RKI:Summe_Infektionen']= df.apply(lambda row: row[f'{bland}:RKI:Summe_Infektionen'] - row[f'{bland}:RKI:Summe_Todesfaelle'] , axis = 1)
 
     return df
 
@@ -175,7 +175,7 @@ class DataAcquisition:
 
   def fetch_bundesland_morgenpost(self, bundesland:str="Hamburg") -> pandas.DataFrame:
     """
-    Fetch Covid-19-Cases for a bundeland from 
+    Fetch Covid-19-Cases for a bundesland from 
     https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
     
     Args:
@@ -232,7 +232,7 @@ class DataAcquisition:
       collecting_df = bland_df.merge(collecting_df,how="outer",on="Datum",suffixes=("",""))
 
     df_rki = self.fetch_rki_data_mergable()
-    
+
     collecting_df = collecting_df.merge(df_rki,how="outer",on="Datum",suffixes=(False,False))
 
     return collecting_df
