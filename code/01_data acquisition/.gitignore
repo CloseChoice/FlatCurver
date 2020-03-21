@@ -145,3 +145,4 @@ static
 
 # ignore data files
 *.csv
+!bundeslaender.csv

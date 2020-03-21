@@ -16,7 +16,7 @@ import pandas
 class DataAcquisition:
   """An Utility class for data acquisition."""
 
-  def fetch_bundesland_rki(self, bundesland:str="Hamburg"):
+  def fetch_bundesland_rki(self, bundesland:str="Hamburg") -> pandas.DataFrame:
     """
     Fetch Covid-19-Cases a bundesland from 
     https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
@@ -60,7 +60,7 @@ class DataAcquisition:
 
     return df
 
-  def fetch_germany_morgenpost(self):
+  def fetch_germany_morgenpost(self) -> pandas.DataFrame:
     """
     Fetch Covid-19-Cases for Germany from 
     https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
@@ -82,7 +82,7 @@ class DataAcquisition:
 
     return df
 
-  def fetch_bundesland_morgenpost(self, bundesland:str="Hamburg"):
+  def fetch_bundesland_morgenpost(self, bundesland:str="Hamburg") -> pandas.DataFrame:
     """
     Fetch Covid-19-Cases for a bundeland from 
     https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
@@ -102,6 +102,19 @@ class DataAcquisition:
     df_bundesland = df_bundesland[['date','confirmed','recovered', 'deaths']]
 
     return df_bundesland
+
+  def load_general_stats(self, path:str="bundeslaender.csv") -> pandas.DataFrame:
+    """
+    Extracts bundesland statistical data from a csv file
+    
+    Args:
+        path: path to bundesland csv, a string
+    Returns:
+        a Dataframe containing all historical data from a bundesland
+        cols = ['date','confirmed','recovered', 'deaths']
+    """
+
+    return pandas.read_csv(path)
 
 
 if __name__ == "__main__":
