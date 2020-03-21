@@ -142,6 +142,7 @@ def get_pivoted_country_data(all_death_data,all_infection_data):
         # remove deaths from infections
         df[f'{bland}:RKI:Summe_Infektionen']= df.apply(lambda row: row[f'{bland}:RKI:Summe_Infektionen'] - row[f'{bland}:RKI:Summe_Todesfaelle'] , axis = 1)
 
+    df["Datum"] = df["Datum"].apply(lambda v: v.date()).astype('datetime64[ns]')
     return df
 
 class DataAcquisition:
