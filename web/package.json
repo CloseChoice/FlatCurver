@@ -1,0 +1,45 @@
+{
+    "name": "flatcurver",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "build": "vue-cli-service build",
+        "lint": "vue-cli-service lint"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "^5.8.2",
+        "core-js": "^3.6.4",
+        "lodash": "^4.17.15",
+        "selfupdate": "^1.1.0",
+        "vue": "^2.6.11",
+        "vue-router": "^3.1.5",
+        "vuex": "^3.1.2"
+    },
+    "devDependencies": {
+        "@mdi/font": "^4.9.95",
+        "@vue/cli-plugin-babel": "~4.2.0",
+        "@vue/cli-plugin-eslint": "~4.2.0",
+        "@vue/cli-plugin-router": "~4.2.0",
+        "@vue/cli-service": "~4.2.0",
+        "@vue/eslint-config-prettier": "^6.0.0",
+        "axios": "^0.19.2",
+        "babel-eslint": "^10.0.3",
+        "buefy": "^0.8.12",
+        "bulma": "^0.8.0",
+        "eslint": "^6.8.0",
+        "eslint-config-prettier": "^6.10.0",
+        "eslint-loader": "^3.0.3",
+        "eslint-plugin-prettier": "^3.1.2",
+        "eslint-plugin-vue": "^6.1.2",
+        "node-sass": "^4.12.0",
+        "prettier": "^1.19.1",
+        "sass": "^1.19.0",
+        "sass-loader": "^8.0.2",
+        "vue-template-compiler": "^2.6.11"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://gitlab.com/mindfuel/flatcurver.git"
+    }
+}
