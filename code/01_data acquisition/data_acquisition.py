@@ -128,7 +128,9 @@ class DataAcquisition:
         source = ['rki', 'morgenpost']
     """
     df_info = self.load_general_stats()
+    print(df_info)
 
+    # create dataframe layout
     df_all_collumns = ['date']
     for bundesland in df_info['Bundesland']:
       df_all_collumns.append(f'{bundesland}:morgenpost:confirmed')
@@ -137,9 +139,40 @@ class DataAcquisition:
       df_all_collumns.append(f'{bundesland}:rki:infections')
       df_all_collumns.append(f'{bundesland}:rki:deaths')
       df_all_collumns.append(f'{bundesland}:info:population')
-      print(bundesland)
-
+      
     df_all = pandas.DataFrame(columns=df_all_collumns)
+
+    start_date = datetime.date(2020, 1, 1)
+    end_date = datetime.date.today()
+    delta = datetime.timedelta(days=1)
+
+    df_morgenpost = self.fetch_germany_morgenpost()
+    
+    row_index = 0
+    while start_date <= end_date:
+
+      print(start_date.strftime("%Y-%m-%d"))
+      for bundesland in df_info['Bundesland']:
+        selected_row = df_morgenpost[df_morgenpost['label']==bundesland].loc[df_morgenpost['date'] == str(start_date)]
+        if selected_row.shape[0] > 0:
+          df_all.at[row_index, f'{bundesland}:morgenpost:confirmed'] = int(selected_row['confirmed'])
+          df_all.at[row_index, f'{bundesland}:morgenpost:recovered'] = int(selected_row['recovered'])
+          df_all.at[row_index, f'{bundesland}:morgenpost:deaths'] = int(selected_row['deaths'])
+        else:
+          df_all.at[row_index, f'{bundesland}:morgenpost:confirmed'] = 0
+          df_all.at[row_index, f'{bundesland}:morgenpost:recovered'] = 0
+          df_all.at[row_index, f'{bundesland}:morgenpost:deaths'] = 0
+          
+        #print(df_info.loc[df_info['Bundesland'] == bundesland]["Einwohner"])
+        #df_all.at[0, f'{bundesland}:info:population'] = int(df_info.loc[df_info['Bundesland'] == bundesland]["Einwohner"])
+        #print("Einwohner:", int(df_info.loc[df_info['Bundesland'] == bundesland]["Einwohner"]))
+        #df_all.at[row_index, f'{bundesland}:info:population'] = 0#int(df_info.loc[df_info['Bundesland'] == bundesland]["Einwohner"])
+
+      df_all.at[row_index, f'date'] = str(start_date)
+
+      start_date += delta
+      row_index += 1
+
     return df_all
 
 
