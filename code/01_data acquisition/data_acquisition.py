@@ -95,7 +95,7 @@ if __name__ == "__main__":
   df = data_acquisition.fetch_data_from_rki("Bayern")
   df.to_csv('rki-bayern.csv', index = False)
 
-  # fetch data for bayern from morgenpost website and save to csv
+  # fetch data for bayern from morgenpost and save to csv
   data_acquisition = DataAcquisition()
   df = data_acquisition.fetch_data_from_morgenpost("Bayern")
   df.to_csv('morgenpost-bayern.csv', index = False)
