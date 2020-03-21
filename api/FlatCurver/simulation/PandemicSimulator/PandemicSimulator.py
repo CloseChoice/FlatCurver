@@ -6,26 +6,27 @@ import matplotlib.pyplot as plt
 
 class PandemicSimulator:
     START_DATE = '2020-01-27'
-
+    CONDITIONS = ['Susceptible', 'Dead', 'Infectious', 'Recovered']  #take care this is ordered
     # TODO: this currently only supports the one-dim case. Can this be generalized to fit multi-dim purposes?
     # TODO: functionality to export data
     # TODO: add docstrings
 
-    def __init__(self, beta, gamma, delta, N, timesteps=400):
+    def __init__(self, beta, gamma, delta, N, timesteps=400, group_names=None):
         # TODO: make beta time dependent
-        self.beta = self.transform_beta(beta, timesteps)
-        self.gamma = gamma
-        self.delta = delta
+        self.beta = self.make_time_dependent(beta, timesteps)
+        self.gamma = self.make_time_dependent(gamma, timesteps)
+        self.delta = self.make_time_dependent(delta, timesteps)
         self.N = N
         self.timesteps = timesteps
         self.y0 = [self.N - 1, 0, 1, 0]
         self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
+        self.group_names = group_names
 
         self.assertions()
 
     @staticmethod
-    def transform_beta(beta, timesteps):
-        return [beta] * timesteps if type(beta) != np.array else beta
+    def make_time_dependent(parameter, timesteps):
+        return [parameter] * timesteps if not isinstance(parameter, (np.ndarray, list)) else parameter
 
     def sinusoidal_decay(self, seasonality, length):
         R0 = 2
@@ -39,6 +40,7 @@ class PandemicSimulator:
 
     def assertions(self):
         assert len(self.beta) == self.timesteps
+        assert not self.group_names or isinstance(self.group_names, list)
 
     def set_y0(self, y0):
         self.y0 = y0
@@ -46,10 +48,11 @@ class PandemicSimulator:
     def simulate_SEIR(self):
         def deriv_time_dep(t, y):
             S, E, I, R = y
-            dSdt = -1 / self.N * self.beta[int(t)] * I * S
-            dEdt = self.delta * I
-            dRdt = self.gamma * I
-            dIdt = 1 / self.N * self.beta[int(t)] * I * S - dEdt - dRdt
+            td = int(t)
+            dSdt = -1 / self.N * self.beta[td] * I * S
+            dEdt = self.delta[td] * I
+            dRdt = self.gamma[td] * I
+            dIdt = 1 / self.N * self.beta[td] * I * S - dEdt - dRdt
             return dSdt, dEdt, dIdt, dRdt
         sol = solve_ivp(deriv_time_dep, (0, self.timesteps - 1), y0=self.y0,
                         t_eval=np.linspace(0, self.timesteps - 1, self.timesteps))
@@ -80,3 +83,10 @@ class PandemicSimulator:
         ax.plot(self.dates[sol.t.astype(int)], sol.y[3, :] / self.N, 'black', alpha=0.5, lw=2,
                 label=f'Recovered with immunity')
         self.plotting_standards(ax)
+
+    def simulate_and_export(self):
+        sol = self.simulate_SEIR()
+        col_names = [f'{cond}_{group}' for cond in self.CONDITIONS for group in self.group_names]
+        df = pd.DataFrame(sol.y.T, index=self.dates[sol.t.astype(int)], columns=col_names)
+        return df.to_json(orient='records')
+
