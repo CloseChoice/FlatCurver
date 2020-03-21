@@ -128,7 +128,10 @@ class DataAcquisition:
         a Dataframe containing all historical data from a bundesland
     """
     for bundesland in df_info['Bundesland']:
-      df[f'{bundesland}:rki:days_after_outbreak'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda x: x>threshold).cumsum()
+      df[f'{bundesland}:morgenpost:days_after_outbreak'] = df[f'{bundesland}:morgenpost:confirmed'].apply(lambda x: x>threshold).cumsum()
+      
+    #for bundesland in df_info['Bundesland']:
+    #  df[f'{bundesland}:rki:days_after_outbreak'] = df[f'{bundesland}:rki:confirmed'].apply(lambda x: x>threshold).cumsum()
 
     return df
 
