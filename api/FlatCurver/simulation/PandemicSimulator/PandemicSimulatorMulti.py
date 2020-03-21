@@ -9,7 +9,7 @@ from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSi
 
 class PandemicSimulatorMulti(PandemicSimulator):
 
-    def __init__(self, beta, gamma, delta, N, timesteps=400):
+    def __init__(self, beta, gamma, delta, N, timesteps=400,names=None):
         # TODO: inherit this from PandemicSimulator. Therefore get rid of transform_beta or write it as class method.
         self.beta = beta
         # beta is a matrix of the form 16x16
@@ -31,6 +31,9 @@ class PandemicSimulatorMulti(PandemicSimulator):
         self.y0 = None
         # y0 is a vector which holds a quadruple of (remainingPop,currentInfected,currentRecovered,currentDeath)
 
+        self.names=names 
+        # Store the names of each dimensions
+        # These could be for example bundeslaender or age-groups
         self.ndim = beta.shape[0]
 
     @staticmethod
@@ -44,6 +47,8 @@ class PandemicSimulatorMulti(PandemicSimulator):
         assert isinstance(self.delta, np.array)
         assert isinstance(self.N, np.array)
         assert self.beta.shape == self.gamma.shape == self.delta.shape
+        if self.names:
+            assert self.ndim == len(self.names), "number of names must match the dimensions"
 
     def simulate_SEIR(self):
         '''
@@ -55,7 +60,7 @@ class PandemicSimulatorMulti(PandemicSimulator):
 
         The values are being flattened together into one list with *dSdt and the resulting list can be used for solve_ivp
         '''
-        assert self.y0 is not None, "set y0 before calling simluate_SEIR"
+        assert self.y0 is not None, "set y0 before calling simulate_SEIR"
         def deriv_multi(t, y):
             S, I, R, D = [y[self.ndim*i:self.ndim*(i+1)] for i in range(4)]
             dSdt = -1*np.dot(self.beta, I/self.N)*S
@@ -69,13 +74,19 @@ class PandemicSimulatorMulti(PandemicSimulator):
                         t_eval=np.linspace(0, self.timesteps-1,self.timesteps))
 
     def plot(self, sol):
-        fig = plt.figure(facecolor='w', figsize=(20, 10))
         for i in range(self.ndim):
-            ax = plt.subplot(self.ndim, 1, i + 1)
-            ax.plot(sol.t, sol.y[i, :] / self.N[i], 'b', alpha=0.5, lw=2, label=f'Susceptible_{i}')
-            ax.plot(sol.t, sol.y[self.ndim + i, :] / self.N[i], 'r', alpha=0.5, lw=2, label=f'Infected_{i}')
-
-            ax.plot(sol.t, sol.y[2 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Recovered with immunity_{i}')
-
-            ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Dead_{i}')
-            self.plotting_standards(ax)
+            fig = plt.figure(facecolor='w', figsize=(20, 10))
+            ax = plt.subplot(1,1,1)
+            if self.names:
+                ax.plot(sol.t, sol.y[i, :] / self.N[i], 'b', alpha=0.5, lw=2, label=f'Susceptible_{self.names[i]}')
+                ax.plot(sol.t, sol.y[self.ndim + i, :] / self.N[i], 'r', alpha=0.5, lw=2, label=f'Infected_{self.names[i]}')
+                ax.plot(sol.t, sol.y[2 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Recovered with immunity_{self.names[i]}')
+                ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Dead_{self.names[i]}')
+                self.plotting_standards(ax,self.names[i])
+            else:
+                ax.plot(sol.t, sol.y[i, :] / self.N[i], 'b', alpha=0.5, lw=2, label=f'Susceptible_{i}')
+                ax.plot(sol.t, sol.y[self.ndim + i, :] / self.N[i], 'r', alpha=0.5, lw=2, label=f'Infected_{i}')
+                ax.plot(sol.t, sol.y[2 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Recovered with immunity_{i}')
+                ax.plot(sol.t, sol.y[3 * self.ndim + i, :] / self.N[i], 'g', alpha=0.5, lw=2, label=f'Dead_{i}')
+                self.plotting_standards(ax)
+            plt.show()

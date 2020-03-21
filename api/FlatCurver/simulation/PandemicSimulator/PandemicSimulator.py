@@ -86,6 +86,6 @@ class PandemicSimulator:
         ax.plot(self.dates[sol.t.astype(int)], sol.y[0, :] / self.N, 'b', alpha=0.5, lw=2, label=f'Susceptible')
         ax.plot(self.dates[sol.t.astype(int)], sol.y[1, :] / self.N, 'r', alpha=0.5, lw=2, label=f'Dead')
         ax.plot(self.dates[sol.t.astype(int)], sol.y[2, :] / self.N, 'g', alpha=0.5, lw=2, label=f'Infected')
-        ax.plot(self.dates[sol.t.astype(int)], sol.y[3, :] / self.N, 'black', alpha=0.5, lw=2,
-                label=f'Recovered with immunity')
+        ax.plot(self.dates[sol.t.astype(int)], sol.y[3, :] / self.N, 'black', alpha=0.5, lw=2,label=f'Recovered with immunity')
         self.plotting_standards(ax,title)
+        plt.show()
