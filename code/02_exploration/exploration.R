@@ -7,7 +7,7 @@ library("ggplot2")
 # Daten laden
 
 # Mappingtabelle Bundesland zu Kürzel
-DT_map_BL <- fread("../corona_measures - BL Resarch Mapping.csv")
+DT_map_BL <- fread("data/corona_measures - BL Resarch Mapping.csv")
 DT_map_BL <- DT_map_BL[, .(bundesland, short)]
 
 # Zahl der Infizierten usw.
@@ -25,7 +25,7 @@ setnames(dtDE, "short", "bundesland")
 dtDE <- dtDE[label != "Repatriierte"]
 
 # Maßnahmentabelle
-DT_measures <- fread("../corona_measures - Measures_Overview.csv")
+DT_measures <- fread("data/corona_measures - Measures_Overview.csv")
 DT_measures <- DT_measures[, .(gueltig_ab, gueltig_bis, bundesland, measure = label)]
 DT_measures[, gueltig_ab := as.Date(gueltig_ab, tz = "Europe/Berlin")]
 DT_measures[, gueltig_bis := as.Date(gueltig_bis, tz = "Europe/Berlin")]
@@ -37,7 +37,7 @@ DT_measures <- DT_measures[gueltig_ab <= dtDE[, max(date)]]
 
 
 # Daten zu Grenzschließungen
-DT_borders <- fread("../corona_measures - Grenzkontrollen.csv")
+DT_borders <- fread("data/corona_measures - Grenzkontrollen.csv")
 DT_borders <- DT_borders[, .(gueltig_ab, gueltig_bis, bundesland, nachbarstaat)]
 DT_borders[, gueltig_ab := as.Date(gueltig_ab, tz = "Europe/Berlin")]
 DT_borders[, gueltig_bis := as.Date(gueltig_bis, tz = "Europe/Berlin")]
