@@ -89,11 +89,14 @@ function generateMapLayout(results, selectedRegion) {
     }
   });
 
+  setColorOfState(mapLayout, "Bayern", "#ff6666");
+  setColorOfState(mapLayout, "Baden-Württemberg", "#ff4444");
+  setColorOfState(mapLayout, "Nordrhein-Westfalen", "#ff1111");
   for (let region of Regions) {
-    if (region.label !== "Deutschland") {
+    /*if (region.label !== "Deutschland") {
       console.log(region.label);
       setColorOfState(mapLayout, region.label, "#ff0000");
-    }
+    }*/
   }
 
   return mapLayout;

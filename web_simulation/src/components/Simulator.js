@@ -63,7 +63,7 @@ class Simulator extends React.Component {
       actions[region.label] = {};
       for (let action of Actions) {
         actions[region.label][action.label] = {
-          data: null,
+          date: null,
           intensity: 0
         };
       }
@@ -85,6 +85,13 @@ class Simulator extends React.Component {
     console.log("onChangeSlider:", { val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].intensity = val;
+    this.setState({ actions });
+  };
+
+  onChangeDate = (date, val, selectedRegion, action) => {
+    console.log("onChangeDate:", { date, val, selectedRegion, action });
+    const { actions } = this.state;
+    actions[selectedRegion.label][action.label].date = date;
     this.setState({ actions });
   };
 
@@ -183,8 +190,21 @@ class Simulator extends React.Component {
                               <KeyboardDatePicker
                                 disableToolbar
                                 variant="inline"
-                                format="MM/dd/yyyy"
+                                format="dd/MM/yyyy"
                                 margin="normal"
+                                value={
+                                  actions[selectedRegion.label][action.label]
+                                    .date
+                                }
+                                onChange={(date, val) =>
+                                  this.onChangeDate(
+                                    date,
+                                    val,
+                                    selectedRegion,
+                                    action
+                                  )
+                                }
+                                autoOk
                                 KeyboardButtonProps={{
                                   "aria-label": "change date"
                                 }}
