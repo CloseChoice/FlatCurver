@@ -11,7 +11,7 @@ class PandemicSimulator:
     # TODO: functionality to export data
     # TODO: add docstrings
 
-    def __init__(self, beta, gamma, delta, N, group_names, timesteps=400):
+    def __init__(self, beta, gamma, delta, N, group_names, timesteps):
         self.beta = self.make_time_dependent(beta, timesteps)
         self.gamma = self.make_time_dependent(gamma, timesteps)
         self.delta = self.make_time_dependent(delta, timesteps)
