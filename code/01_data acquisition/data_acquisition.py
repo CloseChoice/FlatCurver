@@ -157,9 +157,9 @@ class DataAcquisition:
 
     for bundesland in df_info['Bundesland'][1:]:
       inf_df = fetch_infection_data_from_rki(bundesland)
-      rki_infection_data.append(inf_df)
+      rki_infection_data = rki_infection_data.append(inf_df)
       ded_df = fetch_death_data_from_rki(bundesland)
-      rki_death_data.append(ded_df)
+      rki_death_data = rki_death_data.append(ded_df)
 
     return get_pivoted_country_data(rki_death_data,rki_infection_data)
 
@@ -281,7 +281,7 @@ class DataAcquisition:
       collecting_df = bland_df.merge(collecting_df,how="outer",on="Datum",suffixes=("",""))
 
     df_rki = self.fetch_rki_data_mergable()
-  
+
     collecting_df = collecting_df.merge(df_rki,how="outer",on="Datum",suffixes=(False,False))
 
     collecting_df = collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
