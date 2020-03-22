@@ -99,15 +99,15 @@ function generateMapLayout(results, selectedRegion) {
       b: 0
     }
   });
-
-  setColorOfState(mapLayout, "Bayern", "#ff6666");
-  setColorOfState(mapLayout, "Baden-Württemberg", "#ff4444");
-  setColorOfState(mapLayout, "Nordrhein-Westfalen", "#ff1111ff");
   for (let region of Regions) {
-    /*if (region.label !== "Deutschland") {
+    if (region.label !== "Deutschland") {
       console.log(region.label);
-      setColorOfState(mapLayout, region.label, "#ff0000");
-    }*/
+      setColorOfState(
+        mapLayout,
+        region.label,
+        results[region.label]["Color"].slice(-1)[0]
+      );
+    }
   }
 
   return mapLayout;
