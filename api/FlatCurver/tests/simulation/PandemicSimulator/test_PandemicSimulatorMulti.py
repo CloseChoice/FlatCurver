@@ -15,7 +15,8 @@ class TestPandemicSimulatorMulti(unittest.TestCase):
         cls.N = np.array([0.6 * cls.ger_pop, 0.4 * cls.ger_pop])
 
     def test_running(self):
-        pan_obj = PandemicSimulatorMulti(beta=self.beta, gamma=self.gamma, delta=self.delta, N=self.N, timesteps=600)
+        pan_obj = PandemicSimulatorMulti(beta=self.beta, gamma=self.gamma, delta=self.delta, N=self.N,
+                                         group_names=['Deutschland', 'Nachbarstaaten'], timesteps=600)
         pan_obj.set_y0([self.N[0]-1, self.N[1], 1, 0, 0, 0, 0, 0])
         sol = pan_obj.simulate_SEIR()
         assert sol.y.shape == (8, 600)

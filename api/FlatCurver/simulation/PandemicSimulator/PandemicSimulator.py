@@ -11,16 +11,15 @@ class PandemicSimulator:
     # TODO: functionality to export data
     # TODO: add docstrings
 
-    def __init__(self, beta, gamma, delta, N, timesteps=400, group_names=None):
-        # TODO: make beta time dependent
+    def __init__(self, beta, gamma, delta, N, group_names, timesteps=400):
         self.beta = self.make_time_dependent(beta, timesteps)
         self.gamma = self.make_time_dependent(gamma, timesteps)
         self.delta = self.make_time_dependent(delta, timesteps)
         self.N = N
+        self.group_names = group_names
         self.timesteps = timesteps
         self.y0 = [self.N - 1, 0, 1, 0]
         self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
-        self.group_names = group_names
 
         self.assertions()
 
@@ -46,17 +45,18 @@ class PandemicSimulator:
         self.y0 = y0
 
     def simulate_SEIR(self):
-        def deriv_time_dep(t, y):
-            S, E, I, R = y
-            td = int(t)
-            dSdt = -1 / self.N * self.beta[td] * I * S
-            dEdt = self.delta[td] * I
-            dRdt = self.gamma[td] * I
-            dIdt = 1 / self.N * self.beta[td] * I * S - dEdt - dRdt
-            return dSdt, dEdt, dIdt, dRdt
-        sol = solve_ivp(deriv_time_dep, (0, self.timesteps - 1), y0=self.y0,
+        sol = solve_ivp(self.deriv, (0, self.timesteps - 1), y0=self.y0,
                         t_eval=np.linspace(0, self.timesteps - 1, self.timesteps))
         return sol
+
+    def deriv(self, t, y):
+        S, E, I, R = y
+        td = int(t)
+        dSdt = -1 / self.N * self.beta[td] * I * S
+        dEdt = self.delta[td] * I
+        dRdt = self.gamma[td] * I
+        dIdt = 1 / self.N * self.beta[td] * I * S - dEdt - dRdt
+        return dSdt, dEdt, dIdt, dRdt
 
     def simulate_and_show_results(self):
         sol = self.simulate_SEIR()
@@ -84,9 +84,16 @@ class PandemicSimulator:
                 label=f'Recovered with immunity')
         self.plotting_standards(ax)
 
-    def simulate_and_export(self):
+    def simulate_extract_df(self):
+        """simulate and return dataframe"""
         sol = self.simulate_SEIR()
         col_names = [f'{cond}_{group}' for cond in self.CONDITIONS for group in self.group_names]
+        print(col_names)
         df = pd.DataFrame(sol.y.T, index=self.dates[sol.t.astype(int)], columns=col_names)
+        return df
+
+    def simulate_and_export(self):
+        """simulate and export to json"""
+        df = self.simulate_extract_df()
         return df.to_json(orient='records')
 

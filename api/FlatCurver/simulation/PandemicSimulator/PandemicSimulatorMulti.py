@@ -10,9 +10,9 @@ from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSi
 
 class PandemicSimulatorMulti(PandemicSimulator):
 
-    def __init__(self, beta, gamma, delta, N, timesteps=400):
-        # TODO: inherit this from PandemicSimulator. Therefore get rid of transform_beta or write it as class method.
-        super().__init__(beta, gamma, delta, N, timesteps)
+    def __init__(self, beta, gamma, delta, N, group_names, timesteps=400):
+        # inheriting suer init leads to problems, since y0 is set in PandemicSimulator and constructs the y0 as N-1 while N can be a list in here
+        super().__init__(beta, gamma, delta, N, group_names, timesteps)
         self.y0 = None
         self.ndim = beta[0].shape[0]  # use first element of list to determine the dimensions of simulation
 
@@ -32,20 +32,18 @@ class PandemicSimulatorMulti(PandemicSimulator):
 
     def simulate_SEIR(self):
         # TODO: make this unnecessary. See todo in line 12
-        # TODO: way too much code copied here from base class
-        assert self.y0 is not None, "set y0 before calling simluate_SEIR"
+        assert self.y0 is not None, "set y0 before calling simulate_SEIR"
+        return super().simulate_SEIR()
 
-        def deriv_multi(t, y):
-            S, E, I, R = [y[self.ndim*i:self.ndim*(i+1)] for i in range(4)]
-            td = int(t)
-            dSdt = -1*np.dot(self.beta[td], I/self.N)*S
-            dEdt = np.dot(self.delta[td], I)
-            dRdt = np.dot(self.gamma[td], I)
-            dIdt = 1/self.N*np.dot(self.beta[td], I)*S-dEdt-dRdt
-            return [*dSdt, *dEdt, *dIdt, *dRdt]
-
-        return solve_ivp(deriv_multi, (0, self.timesteps - 1), y0=self.y0, t_eval=np.linspace(0, self.timesteps-1,
-                                                                                              self.timesteps))
+    def deriv(self, t, y):
+        """function which is to be optimized with scipy.integrate.solve_ivp."""
+        S, E, I, R = [y[self.ndim * i:self.ndim * (i + 1)] for i in range(4)]
+        td = int(t)
+        dSdt = -1 * np.dot(self.beta[td], I / self.N) * S
+        dEdt = np.dot(self.delta[td], I)
+        dRdt = np.dot(self.gamma[td], I)
+        dIdt = 1 / self.N * np.dot(self.beta[td], I) * S - dEdt - dRdt
+        return [*dSdt, *dEdt, *dIdt, *dRdt]
 
     def plot(self, sol):
         fig = plt.figure(facecolor='w', figsize=(20, 10))

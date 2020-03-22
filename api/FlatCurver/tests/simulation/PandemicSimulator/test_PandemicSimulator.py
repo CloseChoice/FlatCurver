@@ -14,6 +14,7 @@ class TestPandemicSimulator(unittest.TestCase):
         cls.ger_pop = 8 * 10e7  # german population
 
     def test_running(self):
-        pan_obj = PandemicSimulator(beta=self.beta, gamma=self.gamma, delta=self.delta, N=self.N, timesteps=600)
+        pan_obj = PandemicSimulator(beta=self.beta, gamma=self.gamma, delta=self.delta, N=self.N,
+                                    group_names=['Deutschland'], timesteps=600)
         sol = pan_obj.simulate_SEIR()
         assert sol.y.shape == (4, 600)
