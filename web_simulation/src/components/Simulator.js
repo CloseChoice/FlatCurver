@@ -71,7 +71,7 @@ class Simulator extends React.Component {
     }
     this.state = {
       actions: actions,
-      selectedRegion: Regions[0],
+      selectedRegion: Regions[2],
       selectedTimeStamp: new Date()
     };
     console.log(actions);

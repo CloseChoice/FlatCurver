@@ -94,6 +94,8 @@ function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
   const mapLayout = Object.assign(MapLayout, {
     width: 750,
     height: 580,
+    paper_bgcolor: "#424242",
+    plot_bgcolor: "#424242",
     title: "",
     margin: {
       l: 0,
@@ -155,6 +157,17 @@ class MapView extends React.Component {
             <Plot
               data={curvesData}
               layout={{
+                font: {
+                  color: "#ffffff"
+                },
+                plot_bgcolor: "#424242",
+                paper_bgcolor: "#424242",
+                xaxis: {
+                  gridcolor: "#515151"
+                },
+                yaxis: {
+                  gridcolor: "#515151"
+                },
                 width: 750,
                 height: 260,
                 title: `Simulierter Verlauf in ${selectedRegion.label}`,
