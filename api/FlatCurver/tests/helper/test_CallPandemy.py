@@ -46,3 +46,15 @@ class TestCallPandemy(unittest.TestCase):
         for m1, m2 in zip(matrix, expected_matrix):
             np.testing.assert_array_equal(m1, m2)
 
+    def test_flask_stuff(self):
+        # TODO: improve this test. Check how flask is usually tested and use this
+        from FlatCurver.helper.CallPandemy import CallPandemy
+        SIMULATED_TIMESTEPS = 200
+        jsondata = json.load(open('data_flask.json', 'r'))
+        json_ger = jsondata.pop('Deutschland')
+        caller = CallPandemy()
+        result_bl = caller.call_simulation_bundeslaender(jsondata, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
+        result_ger = caller.call_simulation_germany(json_ger, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
+        result_bl.update(result_ger)
+
+

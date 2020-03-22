@@ -113,6 +113,9 @@ class CallPandemy:
         return [arrange_dates(param, timesteps) for param in args]
 
     def call_simulation_germany(self, beta, gamma=None, delta=None, timesteps=None):
+        norm = matplotlib.colors.Normalize(vmin=0.6, vmax=1, clip=True)
+        mapper = cm.ScalarMappable(norm=norm, cmap=cm.RdYlGn)
+
         gamma = gamma or self.DEFAULT_GAMMA_DCT
         delta = delta or self.DEFAULT_DELTA_DCT
         timesteps = timesteps or self.DEFAULT_TIMESTEPS
@@ -120,15 +123,19 @@ class CallPandemy:
         beta_ng, gamma_ng, delta_ng, N_ng = self.calculate_values_neighbors(beta_lst, gamma_lst, delta_lst,
                                                                             self.population_germany)
         pandemic_caller = PandemicSimulatorMulti(beta=beta_ng, gamma=gamma_ng, delta=delta_ng, N=N_ng,
-                                                 group_names=['Germany', 'Nachbarlaender'], timesteps=timesteps)
+                                                 group_names=['Deutschland', 'Nachbarlaender'], timesteps=timesteps)
         pandemic_caller.set_y0([N_ng[0]-1, N_ng[1]-1000, 0, 0, 1, 1000, 0, 0])
 
         df = pandemic_caller.simulate_extract_df()
+
         df = df[[col for col in df.columns if 'Deutschland' in col]]
         df = self.rename_cols(df, 'Deutschland')
+        df['InfectedRatio'] = df['Infectious'] / self.population_germany
+        df['Color'] = df['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1 - x),
+                                                                                   keep_alpha=False).upper())
         adjusted_df = self.adjust_dataframe_for_export(df)
         df_as_dict = {'Deutschland': adjusted_df.to_dict(orient='list')}
-        return json.dumps(df_as_dict)
+        return df_as_dict
 
     def adjust_dataframe_for_export(self, df):
         df = df.reset_index().rename(columns={'index': 'Timestamp'})
