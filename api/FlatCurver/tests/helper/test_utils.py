@@ -17,3 +17,11 @@ class TestMatrixCreatorHelper(unittest.TestCase):
         expected_srs = pd.Series(expected_values, index=expected_keys)
         pd.testing.assert_series_equal(srs, expected_srs)
 
+    def test_arange_dates_shorter_then_last_date(self):
+        timesteps = 20
+        srs = arrange_dates(self.indict, timesteps=timesteps)
+        expected_keys = pd.date_range("2020-01-01", periods=timesteps)
+        expected_values = [1] * 20
+        expected_srs = pd.Series(expected_values, index=expected_keys)
+        pd.testing.assert_series_equal(srs, expected_srs)
+

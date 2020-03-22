@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 import os
+import json
+from collections import OrderedDict
+from copy import copy
 
-from ..simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
 from ..simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
 from .utils import arrange_dates
 
@@ -19,17 +21,69 @@ class CallPandemy:
     
     _package_directory = os.path.dirname(os.path.abspath(__file__))
     PATH_TO_CSV = os.path.join(_package_directory, '../../../data/einwohner_bundeslaender.csv')
+    PATH_TO_DEFAULT_JSON = os.path.join(_package_directory, 'default_params.json')
     def __init__(self):
         pop_df = pd.read_csv(self.PATH_TO_CSV, sep='\t')
-        self.pop_bundeslaender = pop_df.set_index('Bundesland').to_dict()['Einwohner']
+        self.pop_bundeslaender = OrderedDict(sorted(pop_df.set_index('Bundesland').to_dict()['Einwohner'].items()))
         self.population_germany = sum(self.pop_bundeslaender.values())
 
     def construct_time_dependent_beta(self, beta_dct, timesteps):
         return arrange_dates(beta_dct, timesteps=timesteps)
 
-    def call_simulation_bundeslaender(self):
-        # TODO: decide wheether neighboring countries shall be taken into account
-        pass
+
+
+    def call_simulation_bundeslaender(self, beta_dct, gamma, delta, timesteps):
+        with open(self.PATH_TO_DEFAULT_JSON, 'r') as f:
+            default_params = json.load(f)
+            ordered_params = OrderedDict(sorted(default_params.items()))
+        updated_params = self.update_params(ordered_params)
+        betas = self.create_matrices(updated_params['beta'], timesteps)
+        gammas = self.create_matrices(updated_params['gamma'], timesteps)
+        deltas = self.create_matrices(updated_params['delta'], timesteps)
+        N = np.array(list(self.pop_bundeslaender.values()))
+
+        pandemic_caller = PandemicSimulatorMulti(beta=betas, gamma=gammas, delta=deltas, N=N, group_names=list(self.pop_bundeslaender.keys()), timesteps=timesteps)
+        pandemic_caller.set_y0([*N, *list([0]*16), *list([1]*16), *list([0]*16)])
+        df = pandemic_caller.simulate_extract_df()
+        df = self.adjust_dataframe_for_export(df)
+        df = self.aggregate_bundeslaender_result(df)
+        result_dct = self.get_correct_json_bundeslaender(df)
+        return json.dump(result_dct, open('simulate_bundeslaender.json', 'w'), ensure_ascii=False)
+
+    @staticmethod
+    def aggregate_bundeslaender_result(df):
+        df_agg = copy(df)
+        for status in ['Susceptible', 'Dead', 'Infectious', 'Recovered']:
+            df_agg[f'{status}_Deutschland'] = df[[col for col in df.columns if status in col]].sum(1)
+        return df_agg
+
+
+    def get_correct_json_bundeslaender(self, df):
+        result_dct = {}
+        for bundesland in list(self.pop_bundeslaender.keys()) + ['Deutschland']:
+            cols_bundesland = [col for col in df.columns if bundesland in col]
+            df_bl = df[cols_bundesland + ['Timestamp']]
+            new_colnames = [col.replace(f'_{bundesland}', '') for col in df_bl.columns]
+            df_bl.columns = new_colnames
+            result_dct[bundesland] = df_bl.to_dict(orient='list')
+        return result_dct
+
+
+
+    def update_params(self, ordered_params):
+        #TODO: update logic für Jsons schreiben: bspw. {'2020-01-01': 1, '2020-02-01': 4} und das update so aussieht {'2020-01-15':2} dann nur sachen nach dem 2020-01-15 überschreiben
+        return ordered_params
+
+    @staticmethod
+    def create_matrices(ordered_param, timesteps):
+        params = pd.DataFrame({k: arrange_dates(v, timesteps) for k, v in ordered_param.items()})
+        arr = []
+        for ind, val in params.iterrows():
+            arr.append(np.diag(val))
+        return arr
+
+
+
 
     def calculate_values_neighbors(self, beta, gamma, delta, N):
         """helper function to create the beta, gamma and delta matrices. This takes a scalar beta, gamma and delta
@@ -59,11 +113,20 @@ class CallPandemy:
         beta_ng, gamma_ng, delta_ng, N_ng = self.calculate_values_neighbors(beta_lst, gamma_lst, delta_lst,
                                                                             self.population_germany)
         pandemic_caller = PandemicSimulatorMulti(beta=beta_ng, gamma=gamma_ng, delta=delta_ng, N=N_ng,
-                                                 group_names=['Germany', 'Neigbhors'], timesteps=timesteps)
+                                                 group_names=['Germany', 'Neighbors'], timesteps=timesteps)
         pandemic_caller.set_y0([N_ng[0]-1, N_ng[1]-1000, 0, 0, 1, 1000, 0, 0])
-        return pandemic_caller.simulate_and_export()
 
+        df = pandemic_caller.simulate_extract_df()
+        df = df[[col for col in df.columns if 'Germany' in col]]
+        adjusted_df = self.adjust_dataframe_for_export(df)
+        return self.dump_to_json(adjusted_df)
 
-if __name__ == "__main__":
-    CallPandemy()
+    def dump_to_json(self, df):
+        dct = df.to_dict(orient='list')
+        return json.dumps(dct)
+
+    def adjust_dataframe_for_export(self, df):
+        df = df.reset_index().rename(columns={'index': 'Timestamp'})
+        df['Timestamp'] = df['Timestamp'].dt.strftime('%Y-%m-%d')
+        return df
 
