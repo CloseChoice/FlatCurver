@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
-from FlatCurver.simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
-from FlatCurver.helper import utils
+from ..simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
+from ..simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
+from .utils import arrange_dates
 
 
 class CallPandemy:
@@ -24,7 +24,7 @@ class CallPandemy:
         self.population_germany = sum(self.pop_bundeslaender.values())
 
     def construct_time_dependent_beta(self, beta_dct, timesteps):
-        return utils.arrange_dates(beta_dct, timesteps=timesteps)
+        return arrange_dates(beta_dct, timesteps=timesteps)
 
     def call_simulation_bundeslaender(self):
         # TODO: decide wheether neighboring countries shall be taken into account

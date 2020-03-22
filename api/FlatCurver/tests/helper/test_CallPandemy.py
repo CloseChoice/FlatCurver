@@ -1,6 +1,8 @@
 import unittest
 
+# TODO: make this relative
 from FlatCurver.helper.CallPandemy import CallPandemy
+
 
 class TestCallPandemy(unittest.TestCase):
 
