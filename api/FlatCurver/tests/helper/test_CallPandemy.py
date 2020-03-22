@@ -1,6 +1,7 @@
 import unittest
 
-from FlatCurver.helper.CallPandemy import CallPandemy
+from . import CallPandemy
+
 
 class TestCallPandemy(unittest.TestCase):
 
