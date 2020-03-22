@@ -10,7 +10,7 @@ from .PandemicSimulator import PandemicSimulator
 
 class PandemicSimulatorMulti(PandemicSimulator):
 
-    def __init__(self, beta, gamma, delta, N, group_names, timesteps=400):
+    def __init__(self, beta, gamma, delta, N, group_names, timesteps):
         # inheriting suer init leads to problems, since y0 is set in PandemicSimulator and constructs the y0 as N-1 while N can be a list in here
         super().__init__(beta, gamma, delta, N, group_names, timesteps)
         self.y0 = None

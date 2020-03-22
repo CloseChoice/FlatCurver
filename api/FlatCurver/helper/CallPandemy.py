@@ -57,11 +57,10 @@ class CallPandemy:
         delta_lst = self.construct_time_dependent_beta(delta, timesteps=timesteps)
         beta_ng, gamma_ng, delta_ng, N_ng = self.calculate_values_neighbors(beta_lst, gamma_lst, delta_lst,
                                                                             self.population_germany)
-        import pdb; pdb.set_trace()
         pandemic_caller = PandemicSimulatorMulti(beta=beta_ng, gamma=gamma_ng, delta=delta_ng, N=N_ng,
-                                                 group_names=['Germany', 'Neigbhors'])
-        pandemic_caller.set_y0([N_ng[0]-1, N_ng[1]-1000, 0, 0, 0, 1, 1000, 0, 0])
-        return pandemic_caller.simulate_extract_df()
+                                                 group_names=['Germany', 'Neigbhors'], timesteps=timesteps)
+        pandemic_caller.set_y0([N_ng[0]-1, N_ng[1]-1000, 0, 0, 1, 1000, 0, 0])
+        return pandemic_caller.simulate_and_export()
 
 
 
