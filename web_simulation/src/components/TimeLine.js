@@ -3,9 +3,9 @@ import { Grid, Paper, withStyles, withTheme } from "@material-ui/core";
 import HorizontalTimeline from "react-horizontal-timeline";
 
 function createTimeStamps() {
-  var now = new Date(2020, 6, 1);
+  var later = new Date(2020, 6, 1);
   var daysOfYear = [];
-  for (var d = new Date(2020, 1, 1); d <= now; d.setDate(d.getDate() + 2)) {
+  for (var d = new Date(2020, 1, 1); d <= later; d.setDate(d.getDate() + 1)) {
     daysOfYear.push(new Date(d));
   }
 
@@ -14,11 +14,15 @@ function createTimeStamps() {
 
 const VALUES = createTimeStamps();
 
+const start_index = Math.floor(
+  (new Date().getTime() - VALUES[0].getTime()) / (1000 * 3600 * 24)
+);
+
 class TimeLine extends React.Component {
-  state = { value: 20, previous: 19 };
+  state = { value: start_index, previous: start_index - 1 };
 
   componentDidMount() {
-    this.props.onSelectTimeStamp(VALUES[20]);
+    this.props.onSelectTimeStamp(VALUES[start_index]);
   }
 
   render() {
@@ -37,7 +41,11 @@ class TimeLine extends React.Component {
             }}
           >
             <HorizontalTimeline
-              style={{ foreground: theme.palette.primary }}
+              styles={{
+                foreground: theme.palette.primary.main,
+                outline: "#fff",
+                background: "#424242"
+              }}
               labelWidth={50}
               linePadding={10}
               index={this.state.value}
