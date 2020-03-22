@@ -1,6 +1,6 @@
 import unittest
 
-from . import CallPandemy
+from ...helper.CallPandemy import CallPandemy
 
 
 class TestCallPandemy(unittest.TestCase):

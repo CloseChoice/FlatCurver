@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as numpy
+import numpy as np
 import os
 
 from ..simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
