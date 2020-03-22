@@ -101,7 +101,6 @@ function generateMapLayout(results, selectedRegion) {
   });
   for (let region of Regions) {
     if (region.label !== "Deutschland") {
-      console.log(region.label);
       setColorOfState(
         mapLayout,
         region.label,

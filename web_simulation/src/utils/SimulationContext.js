@@ -32,7 +32,6 @@ class SimulationProvider extends Component {
   }
 
   run(actions) {
-    console.log(actions);
     let payload = initial_betas;
     for (let region in actions) {
       for (let act of Object.keys(actions[region]).sort(
@@ -41,24 +40,20 @@ class SimulationProvider extends Component {
         if (actions[region][act].date !== null) {
           const betaOld = Object.values(payload[region]).slice(-1)[0];
           const actionTemplate = Actions.find(c => c.label === act);
-          console.log(("act:", Object.values(payload[region])));
-          console.log(("actionTemplate:", actionTemplate));
           const beta = actionTemplate.apply(
             betaOld,
-            actions[region][act].slider
+            actions[region][act].intensity
           );
           payload[region][
             actions[region][act].date.toISOString().split("T")[0]
           ] = beta;
-          console.log("betaOld:", betaOld);
-          console.log("beta:", beta);
-          console.log(actions[region][act]);
         }
       }
     }
-    console.log(payload);
+    console.log("payload:", payload);
     Backend.runSimulation(payload).then(results => {
-      this.setState({ results: results });
+      this.setState({ results: results, running: false });
+      console.log("Backend.runSimulation:", results);
     });
   }
 
@@ -67,7 +62,8 @@ class SimulationProvider extends Component {
       <SimulationContext.Provider
         value={{
           run: actions => this.run(actions),
-          results: this.state.results
+          results: this.state.results,
+          running: this.state.running
         }}
       >
         {this.props.children}

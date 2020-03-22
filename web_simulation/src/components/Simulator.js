@@ -13,7 +13,8 @@ import {
   TableBody,
   Toolbar,
   Select,
-  MenuItem
+  MenuItem,
+  LinearProgress
 } from "@material-ui/core";
 import TimeLine from "./TimeLine";
 import MapView from "./MapView";
@@ -108,9 +109,15 @@ class Simulator extends React.Component {
   };
 
   render() {
+    const { running } = this.props.simulation;
     const { selectedRegion, actions } = this.state;
     return (
       <Container maxWidth="xl" style={{ paddingTop: 30 }}>
+        {running && (
+          <LinearProgress
+            style={{ position: "fixed", top: 0, left: 0, right: 0 }}
+          />
+        )}
         <Grid container spacing={4} style={{ height: "100%", marginLeft: 0 }}>
           <Grid item container xs={7} spacing={4}>
             <Grid item xs={12}>
