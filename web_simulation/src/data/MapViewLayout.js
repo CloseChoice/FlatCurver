@@ -1,6 +1,7 @@
 const MapLayout = {
   font: { size: 16, family: "Balto" },
   title: "",
+  style: "dark",
   width: 700,
   height: 850,
   mapbox: {
@@ -11,6 +12,7 @@ const MapLayout = {
       {
         type: "fill",
         color: "rgb(64, 145, 127)",
+        border: "#ffffff",
         source: {
           type: "FeatureCollection",
           state: "Baden-Württemberg",

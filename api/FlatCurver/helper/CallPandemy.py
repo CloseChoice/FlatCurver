@@ -51,7 +51,7 @@ class CallPandemy:
         df = self.adjust_dataframe_for_export(df)
         df = self.aggregate_bundeslaender_result(df)
         result_dct = self.get_correct_json_bundeslaender(df)
-        return json.dump(result_dct, open('simulate_bundeslaender.json', 'w'), ensure_ascii=False)
+        return result_dct# json.dump(result_dct, open('simulate_bundeslaender.json', 'w'), ensure_ascii=False)
 
     @staticmethod
     def aggregate_bundeslaender_result(df):

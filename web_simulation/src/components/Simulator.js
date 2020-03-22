@@ -71,7 +71,7 @@ class Simulator extends React.Component {
     }
     this.state = {
       actions: actions,
-      selectedRegion: Regions[0],
+      selectedRegion: Regions[2],
       selectedTimeStamp: new Date()
     };
     console.log(actions);
@@ -84,14 +84,12 @@ class Simulator extends React.Component {
   };
 
   onChangeSlider = async (e, val, selectedRegion, action) => {
-    console.log("onChangeSlider:", { val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].intensity = val;
     this.setState({ actions });
   };
 
   onChangeDate = async (date, val, selectedRegion, action) => {
-    console.log("onChangeDate:", { date, val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].date = date;
     this.setState({ actions });
@@ -103,7 +101,6 @@ class Simulator extends React.Component {
   };
 
   onMapSelectRegion = label => {
-    console.log(label);
     this.setState({
       selectedRegion: Regions.find(c => c.label === label)
     });
@@ -127,7 +124,7 @@ class Simulator extends React.Component {
           <Grid item container xs={7} spacing={4}>
             <Grid item xs={12}>
               <Typography variant="h4">
-                #WirvsVirus Simulator - How to flatten the curve!
+                #WirVsVirus Simulator - How to flatten the curve!
               </Typography>
             </Grid>
             <Grid item xs={12}>
@@ -155,7 +152,7 @@ class Simulator extends React.Component {
                         <TableCell>
                           <b>Maßnahme</b>
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="center">
                           <b>Umsetzung</b>
                         </TableCell>
                         <TableCell align="right">

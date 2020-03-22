@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Paper } from "@material-ui/core";
+import { Grid, Paper, withStyles, withTheme } from "@material-ui/core";
 import HorizontalTimeline from "react-horizontal-timeline";
 
 function createTimeStamps() {
@@ -22,10 +22,12 @@ class TimeLine extends React.Component {
   }
 
   render() {
+    const { theme } = this.props;
     return (
       <Grid item xs={12} style={{ eight: "200px" }}>
         <Paper>
           <div
+            className="timelineDiv"
             style={{
               width: "calc(100% - 50px)",
               height: 80,
@@ -34,6 +36,7 @@ class TimeLine extends React.Component {
             }}
           >
             <HorizontalTimeline
+              style={{ foreground: theme.palette.primary }}
               labelWidth={50}
               linePadding={10}
               index={this.state.value}
@@ -50,4 +53,4 @@ class TimeLine extends React.Component {
   }
 }
 
-export default TimeLine;
+export default withTheme(TimeLine);

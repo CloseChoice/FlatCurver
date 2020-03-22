@@ -3,8 +3,15 @@ import "./App.css";
 import Simulator from "./components/Simulator";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core";
 import SimulationProvider from "./utils/SimulationContext";
+import { yellow } from "@material-ui/core/colors";
 
-const theme = createMuiTheme({});
+const theme = createMuiTheme({
+  palette: {
+    type: "dark",
+    primary: yellow,
+    secondary: yellow
+  }
+});
 
 class App extends React.Component {
   state = { value: 0, previous: 0 };
