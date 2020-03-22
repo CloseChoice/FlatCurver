@@ -181,12 +181,12 @@ summary(mod_lme)
 # Füge gefittete Werte zum Datensatz hinzu
 dtDEconfirmed[, yhat_lme := fitted(mod_lme)]
 
-dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, rate = number_log_smooth, estimate = yhat_lme)], id.vars = c("bundesland", "day"))
+dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, number_log_smooth, estimate = yhat_lme)], id.vars = c("bundesland", "day"))
 dt_plot_measures <- merge(DT_measures[measure %in% vars_fixed, .(gueltig_ab, bundesland, measure)], dtDE[, .(date0 = min(date)), by = bundesland], by = "bundesland")[, .(bundesland, measure, day = as.numeric(difftime(gueltig_ab, date0, units = "days")))]
 
 p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
 p
-ggsave(filename = "/wales/wirvsvirus/geglaettete_log_rate_mit_schaetzung.png", plot = p, width = 12, height = 8)
+#ggsave(filename = "/wales/wirvsvirus/geglaettete_log_rate_mit_schaetzung.png", plot = p, width = 12, height = 8)
 
 
 # Da die Daten Zeitreihen sind sind die Beobachtungen natürich nicht i.i.d.
@@ -208,12 +208,10 @@ summary(mod_lme_diff)
 
 # Füge gefittete Werte zum Datensatz hinzu
 dtDEconfirmed[!is.na(number_log_smooth_diff), yhat_lme_diff := fitted(mod_lme_diff)]
-dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, rate = number_log_smooth_diff, estimate = yhat_lme_diff)], id.vars = c("bundesland", "day"))
+dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, number_log_smooth_diff, estimate = yhat_lme_diff)], id.vars = c("bundesland", "day"))
 
 p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
 p
-
-
 
 
 
@@ -236,6 +234,28 @@ dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, rate = number_log_smooth_diff
 
 p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
 p
+
+
+
+
+
+# Mit der geglätteten Lograte?
+
+layout(matrix(1:dtDEconfirmed[, uniqueN(bundesland)], nrow = 4))
+lapply(dtDEconfirmed[, unique(bundesland)], function (x) acf(dtDEconfirmed[bundesland == x, lograte_smooth], na.action = na.omit, main = x))
+
+f_lme_lograte <- as.character(f_lme)
+f_lme_lograte[2] <- "lograte_smooth2"
+f_lme_lograte <- formula(paste(f_lme_lograte[c(2, 1, 3)], collapse = ""))
+mod_lme_lograte <- lmer(f_lme_lograte, data = dtDEconfirmed)
+summary(mod_lme_lograte)
+
+dtDEconfirmed[!is.na(lograte_smooth), yhat_lme_lograte := fitted(mod_lme_lograte)]
+dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, lograte_smooth2, estimate = yhat_lme_lograte)], id.vars = c("bundesland", "day"))
+
+p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
+p
+
 
 
 
