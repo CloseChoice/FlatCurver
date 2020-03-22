@@ -14,7 +14,8 @@ import {
   Toolbar,
   Select,
   MenuItem,
-  LinearProgress
+  LinearProgress,
+  Link
 } from "@material-ui/core";
 import TimeLine from "./TimeLine";
 import MapView from "./MapView";
@@ -275,6 +276,16 @@ class Simulator extends React.Component {
               Zeit implementiert worden. Die resultierenden Kurven sind also mit
               Vorsicht zu betrachten und simulieren nur einen <i>möglichen</i>{" "}
               Verlauf.
+              <br />
+              <br />
+              Wissenschaftliche Grundlage:
+              <br />
+              <Link
+                color="primary"
+                href="https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Modellierung_Deutschland.pdf?__blob=publicationFile"
+              >
+                https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Modellierung_Deutschland.pdf
+              </Link>
             </Paper>
           </Grid>
         </Grid>
