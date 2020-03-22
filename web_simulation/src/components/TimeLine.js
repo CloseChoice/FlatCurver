@@ -37,7 +37,11 @@ class TimeLine extends React.Component {
             }}
           >
             <HorizontalTimeline
-              style={{ foreground: theme.palette.primary }}
+              styles={{
+                foreground: theme.palette.primary.main,
+                outline: "#fff",
+                background: "#424242"
+              }}
               labelWidth={50}
               linePadding={10}
               index={this.state.value}

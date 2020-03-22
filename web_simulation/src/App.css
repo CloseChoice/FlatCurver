@@ -10,3 +10,7 @@
 .timelineDiv>div>div>ul>li {
   background-image: unset !important;
 }
+
+body {
+  overflow-x: hidden;
+}
