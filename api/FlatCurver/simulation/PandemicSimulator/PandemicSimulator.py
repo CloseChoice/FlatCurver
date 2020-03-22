@@ -88,7 +88,6 @@ class PandemicSimulator:
         """simulate and return dataframe"""
         sol = self.simulate_SEIR()
         col_names = [f'{cond}_{group}' for cond in self.CONDITIONS for group in self.group_names]
-        print(col_names)
         df = pd.DataFrame(sol.y.T, index=self.dates[sol.t.astype(int)], columns=col_names)
         return df
 

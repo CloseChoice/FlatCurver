@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import copy
+import pandas as pd
 
 
 from .PandemicSimulator import PandemicSimulator
@@ -10,7 +11,13 @@ class PandemicSimulatorMulti(PandemicSimulator):
 
     def __init__(self, beta, gamma, delta, N, group_names, timesteps):
         # inheriting suer init leads to problems, since y0 is set in PandemicSimulator and constructs the y0 as N-1 while N can be a list in here
-        super().__init__(beta, gamma, delta, N, group_names, timesteps)
+        self.beta = self.make_time_dependent(beta, timesteps)
+        self.gamma = self.make_time_dependent(gamma, timesteps)
+        self.delta = self.make_time_dependent(delta, timesteps)
+        self.N = N
+        self.group_names = group_names
+        self.timesteps = timesteps
+        self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
         self.y0 = None
         self.ndim = beta[0].shape[0]  # use first element of list to determine the dimensions of simulation
 
