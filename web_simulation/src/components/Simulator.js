@@ -92,12 +92,19 @@ class Simulator extends React.Component {
     await Backend.runSimulation();
   };
 
+  onMapSelectRegion = label => {
+    console.log(label);
+    this.setState({
+      selectedRegion: Regions.find(c => c.label === label)
+    });
+  };
+
   render() {
     const { selectedRegion, actions } = this.state;
     return (
       <Container maxWidth="xl" style={{ paddingTop: 30 }}>
         <Grid container spacing={4} style={{ height: "100%", marginLeft: 0 }}>
-          <Grid item container xs={8} spacing={4}>
+          <Grid item container xs={7} spacing={4}>
             <Grid item xs={12}>
               <Typography variant="h4">
                 #WirvsVirus Simulator - How to flatten the curve!
@@ -121,78 +128,82 @@ class Simulator extends React.Component {
                     ))}
                   </Select>
                 </Toolbar>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <b>Maßnahme</b>
-                      </TableCell>
-                      <TableCell>
-                        <b>Umsetzung</b>
-                      </TableCell>
-                      <TableCell align="right">
-                        <b>Datum eingesetzt</b>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      {Actions.map(action => (
-                        <TableRow key={action.label}>
-                          <TableCell component="th" scope="row">
-                            {action.label}
-                          </TableCell>
-                          <TableCell
-                            style={{ width: 400 }}
-                            component="th"
-                            scope="row"
-                          >
-                            {action.slider && (
-                              <Slider
-                                value={
-                                  actions[selectedRegion.label][action.label]
-                                    .intensity || 0
-                                }
-                                onChange={(e, val) =>
-                                  this.onChangeSlider(
-                                    e,
-                                    val,
-                                    selectedRegion,
-                                    action
-                                  )
-                                }
-                                getAriaValueText={valuetext}
-                                aria-labelledby="discrete-slider"
-                                valueLabelDisplay="auto"
-                                step={10}
-                                marks={marks}
-                                min={0}
-                                max={100}
+                <div style={{ overflow: "auto", height: 620 }}>
+                  <Table size="small" style={{ tableLayout: "fixed" }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>
+                          <b>Maßnahme</b>
+                        </TableCell>
+                        <TableCell>
+                          <b>Umsetzung</b>
+                        </TableCell>
+                        <TableCell align="right">
+                          <b>Datum der Einsetzung</b>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                        {Actions.map(action => (
+                          <TableRow key={action.label}>
+                            <TableCell component="th" scope="row">
+                              {action.label}
+                            </TableCell>
+                            <TableCell
+                              style={{ width: 400 }}
+                              component="th"
+                              scope="row"
+                            >
+                              {action.slider && (
+                                <Slider
+                                  value={
+                                    actions[selectedRegion.label][action.label]
+                                      .intensity || 0
+                                  }
+                                  onChange={(e, val) =>
+                                    this.onChangeSlider(
+                                      e,
+                                      val,
+                                      selectedRegion,
+                                      action
+                                    )
+                                  }
+                                  getAriaValueText={valuetext}
+                                  aria-labelledby="discrete-slider"
+                                  valueLabelDisplay="auto"
+                                  step={10}
+                                  marks={marks}
+                                  min={0}
+                                  max={100}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell align="right">
+                              <KeyboardDatePicker
+                                disableToolbar
+                                variant="inline"
+                                format="MM/dd/yyyy"
+                                margin="normal"
+                                KeyboardButtonProps={{
+                                  "aria-label": "change date"
+                                }}
                               />
-                            )}
-                          </TableCell>
-                          <TableCell align="right">
-                            <KeyboardDatePicker
-                              disableToolbar
-                              variant="inline"
-                              format="MM/dd/yyyy"
-                              margin="normal"
-                              label="Datum der Einsetzung"
-                              KeyboardButtonProps={{
-                                "aria-label": "change date"
-                              }}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </MuiPickersUtilsProvider>
-                  </TableBody>
-                </Table>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </MuiPickersUtilsProvider>
+                    </TableBody>
+                  </Table>
+                </div>
               </TableContainer>
             </Grid>
             <TimeLine />
           </Grid>
-          <MapView selectedRegion={selectedRegion} />
+          <MapView
+            selectedRegion={selectedRegion}
+            onSelectRegion={this.onMapSelectRegion}
+          />
         </Grid>
       </Container>
     );

@@ -2,11 +2,12 @@ import React from "react";
 import { Grid, Paper } from "@material-ui/core";
 import PropTypes from "prop-types";
 
-import MapViewLayout from "../data/MapViewLayout";
+import { MapData, MapLayout } from "../data/MapViewLayout";
 
 import Plotly from "plotly.js-mapbox-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { withSimulation } from "../utils/SimulationContext";
+import Regions from "../data/Regions";
 const Plot = createPlotlyComponent(Plotly);
 
 //https://plot.ly/create/?fid=empet:15047
@@ -17,139 +18,117 @@ const config = {
   mapboxAccessToken:
     "pk.eyJ1IjoiY2hyaWRkeXAiLCJhIjoiY2lxMnVvdm5iMDA4dnhsbTQ5aHJzcGs0MyJ9.X9o_rzNLNesDxdra4neC_A"
 };
-const map_data = [
-  {
-    uid: "05437872-56e9-4feb-abd3-79536cb1dd8e",
-    mode: "markers",
-    type: "scattermapbox",
-    lat: [
-      48.53798784334733,
-      48.94917269695629,
-      52.95,
-      52.502299698009296,
-      52.765431393186596,
-      53.54610462404504,
-      50.60321670836851,
-      53.7535394556047,
-      53.19920119721645,
-      51.47995445845961,
-      49.91548638774605,
-      49.38363449476495,
-      51.05032936763161,
-      52.01060815844672,
-      54.182325455715194,
-      50.90389419311208
-    ],
-    lon: [
-      9.049518423658956,
-      11.418027577497131,
-      13.2,
-      13.402948501480669,
-      9.161108235507873,
-      10.024470557873288,
-      9.028805533680368,
-      12.549970296944396,
-      8.74885429375113,
-      7.562839874438013,
-      7.447768558468357,
-      6.955542369514458,
-      13.347113513341009,
-      11.701732969476758,
-      9.813437574822748,
-      11.023180940292486
-    ],
-    marker: { size: 6, color: "white", opacity: 0 },
-    text: [
-      "Baden-Württemberg<br>Population: 10075500",
-      "Bayern<br>Population: 12542000",
-      "Brandenburg<br>Population: 2500000",
-      "Berlin<br>Population: 3469000",
-      "Niedersachsen<br>Population: 7914000",
-      "Hamburg<br>Population: 1788000",
-      "Hessen<br>Population: 6066000",
-      "Mecklenburg-Vorpommern<br>Population: 1639000",
-      "Bremen<br>Population: 661000",
-      "Nordrhein-Westfalen<br>Population: 17837000",
-      "Rheinland-Pfalz<br>Population: 4052803",
-      "Saarland<br>Population: 1018000",
-      "Sachsen<br>Population: 4143000",
-      "Sachsen-Anhalt<br>Population: 2331000",
-      "Schleswig-Holstein<br>Population: 2833000",
-      "Thüringen<br>Population: 2231000"
-    ],
-    hoverinfo: "text",
-    showlegend: false
+
+function generateCurveData(results, selectedRegion) {
+  return [
+    {
+      x: results[selectedRegion.label]["Timestamp"],
+      y: results[selectedRegion.label]["Susceptible"],
+      type: "scatter",
+      name: "Empfänglich",
+      mode: "lines",
+      marker: { color: "orange" }
+    },
+    {
+      x: results[selectedRegion.label]["Timestamp"],
+      y: results[selectedRegion.label]["Dead"],
+      type: "scatter",
+      name: "Verstorben",
+      mode: "lines",
+      marker: { color: "black" }
+    },
+    {
+      x: results[selectedRegion.label]["Timestamp"],
+      y: results[selectedRegion.label]["Infectious"],
+      type: "scatter",
+      name: "Infiziert",
+      mode: "lines",
+      marker: { color: "red" }
+    },
+    {
+      x: results[selectedRegion.label]["Timestamp"],
+      y: results[selectedRegion.label]["Recovered"],
+      type: "scatter",
+      name: "Genesen",
+      mode: "lines",
+      marker: { color: "green" }
+    }
+  ];
+}
+
+function setDescriptionOfState(mapData, name, text) {
+  const index = mapData[0].text.findIndex(c => c.startsWith(name));
+  mapData[0].text[index] = `${name}<br>${text}`;
+}
+
+function generateMapData(results, selectedRegion) {
+  const mapData = Object.assign(MapData, {});
+  console.log(mapData);
+  setDescriptionOfState(
+    mapData,
+    "Bayern",
+    `Empfänglich: ${2}<br>Verstorben: ${2}<br>Infiziert: ${2}<br>Genesen: ${2}<br>`
+  );
+  return mapData;
+}
+
+function setColorOfState(mapLayout, name, color) {
+  mapLayout.mapbox.layers.find(c => c.source.state === name).color = color;
+}
+
+function generateMapLayout(results, selectedRegion) {
+  const mapLayout = Object.assign(MapLayout, {
+    width: 750,
+    height: 580,
+    title: "",
+    margin: {
+      l: 0,
+      r: 0,
+      t: 5,
+      b: 0
+    }
+  });
+
+  for (let region of Regions) {
+    if (region.label !== "Deutschland") {
+      console.log(region.label);
+      setColorOfState(mapLayout, region.label, "#ff0000");
+    }
   }
-];
+
+  return mapLayout;
+}
 
 class MapView extends React.Component {
+  onMapClick = e => {
+    let region = null;
+    try {
+      region = e.points[0].text.split("<br>")[0];
+    } catch {}
+
+    console.log(region);
+
+    if (region !== null) this.props.onSelectRegion(region);
+  };
+
   render() {
     const { results } = this.props.simulation;
     const { selectedRegion } = this.props;
 
+    const curvesData = generateCurveData(results, selectedRegion);
+    const mapData = generateMapData(results, selectedRegion);
+    const mapLayout = generateMapLayout(results, selectedRegion);
+
     return (
-      <Grid item xs={4} container>
+      <Grid item xs={5} container>
         <Grid item xs={12} style={{ marginBottom: 32 }}>
           <Paper>
             <Plot
-              data={map_data}
-              frames={[]}
-              layout={Object.assign(MapViewLayout, {
-                width: 590,
-                height: 580,
-                title: "",
-                margin: {
-                  l: 0,
-                  r: 0,
-                  t: 5,
-                  b: 0
-                }
-              })}
-              config={config}
-            />
-          </Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Paper>
-            <Plot
-              data={[
-                {
-                  x: results[selectedRegion.label]["Timestamp"],
-                  y: results[selectedRegion.label]["Susceptible"],
-                  type: "scatter",
-                  name: "Susceptible",
-                  mode: "lines",
-                  marker: { color: "orange" }
-                },
-                {
-                  x: results[selectedRegion.label]["Timestamp"],
-                  y: results[selectedRegion.label]["Dead"],
-                  type: "scatter",
-                  name: "Dead",
-                  mode: "lines",
-                  marker: { color: "black" }
-                },
-                {
-                  x: results[selectedRegion.label]["Timestamp"],
-                  y: results[selectedRegion.label]["Infectious"],
-                  type: "scatter",
-                  name: "Infectious",
-                  mode: "lines",
-                  marker: { color: "red" }
-                },
-                {
-                  x: results[selectedRegion.label]["Timestamp"],
-                  y: results[selectedRegion.label]["Recovered"],
-                  type: "scatter",
-                  name: "Recovered",
-                  mode: "lines",
-                  marker: { color: "green" }
-                }
-              ]}
+              data={curvesData}
               layout={{
-                width: 580,
+                width: 750,
                 height: 260,
-                title: "Epidemie Verlauf",
+                title: `Simulierter Verlauf in ${selectedRegion.label}`,
                 margin: {
                   l: 30,
                   r: 0,
@@ -160,6 +139,17 @@ class MapView extends React.Component {
             />
           </Paper>
         </Grid>
+        <Grid item xs={12}>
+          <Paper>
+            <Plot
+              data={mapData}
+              frames={[]}
+              layout={mapLayout}
+              config={config}
+              onClick={this.onMapClick}
+            />
+          </Paper>
+        </Grid>
       </Grid>
     );
   }
@@ -167,7 +157,8 @@ class MapView extends React.Component {
 
 MapView.propTypes = {
   selectedRegion: PropTypes.object.isRequired,
-  simulation: PropTypes.object.isRequired
+  simulation: PropTypes.object.isRequired,
+  onSelectRegion: PropTypes.func.isRequired
 };
 
 export default withSimulation(MapView);
