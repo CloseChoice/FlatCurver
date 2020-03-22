@@ -5,7 +5,7 @@ from scipy.integrate import solve_ivp
 from copy import copy
 
 
-from PandemicSimulator import PandemicSimulator
+from .PandemicSimulator import PandemicSimulator
 
 
 class PandemicSimulatorMulti(PandemicSimulator):

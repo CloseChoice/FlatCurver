@@ -1,9 +1,10 @@
 import pandas as pd
-import numpy as np
+import numpy as numpy
+import os
 
-from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
-from FlatCurver.simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
-from FlatCurver.helper import utils
+from ..simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
+from ..simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
+from . import utils
 
 
 class CallPandemy:
@@ -15,13 +16,16 @@ class CallPandemy:
     DEFAULT_GAMMA_DCT = {'2020-01-27': 0.97/14}
     DEFAULT_DELTA_DCT = {'2020-01-27': 0.03/14}
     DEFAULT_TIMESTEPS = 200
-
-    PATH_TO_CSV = '/home/tobias/programming/python/corona_simulation/FlatCurver/data/einwohner_bundeslaender.csv'
+    
+    _package_directory = os.path.dirname(os.path.abspath(__file__))
+    PATH_TO_CSV = os.path.join(_package_directory, '../../../data/einwohner_bundeslaender.csv')
     def __init__(self):
         # TODO: exchange path
+        print('running test')
         pop_df = pd.read_csv(self.PATH_TO_CSV, sep='\t')
         self.pop_bundeslaender = pop_df.set_index('Bundesland').to_dict()['Einwohner']
         self.population_germany = sum(self.pop_bundeslaender.values())
+        print(f"pop Germany: {self.population_germany}")
 
     def construct_time_dependent_beta(self, beta_dct, timesteps):
         return utils.arrange_dates(beta_dct, timesteps=timesteps)
@@ -63,4 +67,6 @@ class CallPandemy:
         return pandemic_caller.simulate_and_export()
 
 
+if __name__ == "__main__":
+    CallPandemy()
 
