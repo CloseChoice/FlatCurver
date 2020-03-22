@@ -47,3 +47,5 @@ dummy_y = np.array([[N - 1, 0, 1, 0],]*timesteps)
 
 fit_pan = panfit.FitPandemicSimulator(beta=beta, gamma=gamma, delta=delta, N=N, y=dummy_y,timesteps=timesteps)
 fit_pan.fit_SEIR()
+
+#Hakunamatata
