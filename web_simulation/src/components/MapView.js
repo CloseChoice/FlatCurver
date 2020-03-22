@@ -134,7 +134,7 @@ class MapView extends React.Component {
     const { results } = this.props.simulation;
     const { selectedRegion } = this.props;
 
-    console.log(selectedRegion);
+    console.log("MapView Render");
 
     const curvesData = generateCurveData(results, selectedRegion);
     const mapData = generateMapData(

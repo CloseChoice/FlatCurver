@@ -84,14 +84,12 @@ class Simulator extends React.Component {
   };
 
   onChangeSlider = async (e, val, selectedRegion, action) => {
-    console.log("onChangeSlider:", { val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].intensity = val;
     this.setState({ actions });
   };
 
   onChangeDate = async (date, val, selectedRegion, action) => {
-    console.log("onChangeDate:", { date, val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].date = date;
     this.setState({ actions });
@@ -103,7 +101,6 @@ class Simulator extends React.Component {
   };
 
   onMapSelectRegion = label => {
-    console.log(label);
     this.setState({
       selectedRegion: Regions.find(c => c.label === label)
     });
