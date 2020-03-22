@@ -1,5 +1,8 @@
 setwd("/wales/wirvsvirus/FlatCurver")
 
+update_date <- Sys.Date()#"2020-03-19"
+
+
 library("data.table")
 library("ggplot2")
 #library("googlesheets") # Funktioniert momentan nicht
@@ -13,6 +16,9 @@ DT_map_BL <- DT_map_BL[, .(bundesland, short)]
 # Zahl der Infizierten usw.
 DT <- fread("data/Coronavirus.history.v2.csv")
 DT[, date := as.Date(date, tz = "Europe/Berlin")]
+
+DT <- DT[date <= as.Date(update_date)] 
+
 dt <- melt(DT, id.vars = c("date", "parent", "label", "lon", "lat"), variable.name = "status", value.name = "number")
 dt[, .N, by = parent]
 
@@ -280,4 +286,27 @@ plot(dtDEconfirmed[!is.na(number_log_smooth_diff2), day], residuals(mod_lme_diff
 
 
 
+# Datenexport für Dashboard
 
+# Regressionskoeffizienten
+
+
+coefs <- data.frame(summary(mod_lme_lograte)$coefficients[-1, c("Estimate", "Std. Error")])
+coefs$measure <- rownames(coefs)
+coefs <- data.table(coefs)
+setnames(coefs, "Std..Error", "se")
+setnames(coefs, "Estimate", "estimate")
+coefs[, lower := estimate - qnorm(0.975) * se]
+coefs[, upper := estimate + qnorm(0.975) * se]
+coefs <- merge(data.table(measure = sort(names(measures))), coefs[, .(measure, lower, estimate, upper)], on = "measure", all = TRUE)
+coefs[, updated := update_date]
+
+
+coefs_19 <- copy(coefs)
+coefs_18 <- copy(coefs)
+
+coefs <- rbind(coefs_18, coefs_19)
+setorder(coefs, measure, updated)
+coefs
+
+fwrite(coefs, file = "data/measure_effect_estmates.csv", sep = ",", dec = ".", quote = TRUE)
