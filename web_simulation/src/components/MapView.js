@@ -1,7 +1,7 @@
 import React from "react";
 import { Grid, Paper } from "@material-ui/core";
 
-import MapViewLayout from "./MapViewLayout";
+import MapViewLayout from "../data/MapViewLayout";
 
 import Plotly from "plotly.js-mapbox-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
@@ -58,7 +58,7 @@ const map_data = [
     ],
     marker: { size: 6, color: "white", opacity: 0 },
     text: [
-      "Baden-W\u00fcrttemberg<br>Population: 10075500",
+      "Baden-Württemberg<br>Population: 10075500",
       "Bayern<br>Population: 12542000",
       "Brandenburg<br>Population: 2500000",
       "Berlin<br>Population: 3469000",
@@ -73,7 +73,7 @@ const map_data = [
       "Sachsen<br>Population: 4143000",
       "Sachsen-Anhalt<br>Population: 2331000",
       "Schleswig-Holstein<br>Population: 2833000",
-      "T\u00fcringen<br>Population: 2231000"
+      "Thüringen<br>Population: 2231000"
     ],
     hoverinfo: "text",
     showlegend: false
@@ -85,20 +85,20 @@ class MapView extends React.Component {
 
   render() {
     return (
-      <Grid item xs={4} container spacing={4}>
+      <Grid item xs={4} container>
         <Grid item xs={12}>
           <Paper>
             <Plot
               data={map_data}
               frames={[]}
               layout={Object.assign(MapViewLayout, {
-                width: "500",
-                height: "600",
+                width: "590",
+                height: "580",
                 title: "",
                 margin: {
                   l: 0,
                   r: 0,
-                  t: 0,
+                  t: 5,
                   b: 0
                 }
               })}
@@ -119,7 +119,7 @@ class MapView extends React.Component {
                 }
               ]}
               layout={{
-                width: "500",
+                width: "580",
                 height: 240,
                 title: "Epidemie Verlauf",
                 margin: {

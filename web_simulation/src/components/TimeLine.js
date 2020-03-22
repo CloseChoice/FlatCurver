@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid } from "@material-ui/core";
+import { Grid, Paper } from "@material-ui/core";
 import HorizontalTimeline from "react-horizontal-timeline";
 
 function createTimeStamps() {
@@ -15,28 +15,31 @@ function createTimeStamps() {
 const VALUES = createTimeStamps();
 
 class TimeLine extends React.Component {
-  state = { value: 0, previous: 0 };
+  state = { value: 20, previous: 19 };
 
   render() {
     return (
       <Grid item xs={12} style={{ eight: "200px" }}>
-        <div
-          style={{
-            width: "calc(100% - 50px)",
-            height: "100px",
-            margin: "auto"
-          }}
-        >
-          <HorizontalTimeline
-            labelWidth={50}
-            linePadding={10}
-            index={this.state.value}
-            indexClick={index => {
-              this.setState({ value: index, previous: this.state.value });
+        <Paper>
+          <div
+            style={{
+              width: "calc(100% - 50px)",
+              height: 80,
+              paddingTop: 10,
+              margin: "auto"
             }}
-            values={VALUES}
-          />
-        </div>
+          >
+            <HorizontalTimeline
+              labelWidth={50}
+              linePadding={10}
+              index={this.state.value}
+              indexClick={index => {
+                this.setState({ value: index, previous: this.state.value });
+              }}
+              values={VALUES}
+            />
+          </div>
+        </Paper>
       </Grid>
     );
   }

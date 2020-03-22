@@ -1,28 +1,23 @@
 import React from "react";
 import "./App.css";
-import {
-  withStyles,
-  Container,
-  Typography,
-  Grid,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Checkbox,
-  Slider
-} from "@material-ui/core";
-import FolderIcon from "@material-ui/icons/Folder";
-import Dashboard from "./components/Dashboard";
+import Simulator from "./components/Simulator";
+import { ThemeProvider, createMuiTheme } from "@material-ui/core";
+import SimulationProvider from "./utils/SimulationContext";
+
+const theme = createMuiTheme({});
 
 class App extends React.Component {
   state = { value: 0, previous: 0 };
 
   render() {
     return (
-      <div className="App">
-        <Dashboard />
-      </div>
+      <ThemeProvider theme={theme}>
+        <div className="App">
+          <SimulationProvider>
+            <Simulator />
+          </SimulationProvider>
+        </div>
+      </ThemeProvider>
     );
   }
 }
