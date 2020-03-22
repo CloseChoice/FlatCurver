@@ -9,7 +9,7 @@ from matplotlib import cm
 import re
 
 from ..simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
-from .utils import arrange_dates
+from .utils import arrange_dates, update
 
 
 class CallPandemy:
@@ -39,7 +39,7 @@ class CallPandemy:
         with open(self.PATH_TO_DEFAULT_JSON, 'r') as f:
             default_params = json.load(f)
             ordered_params = OrderedDict(sorted(default_params.items()))
-        updated_params = self.update_params(ordered_params)
+        updated_params = self.update_params(ordered_params, beta_dct, gamma, delta)
         betas = self.create_matrices(updated_params['beta'], timesteps)
         gammas = self.create_matrices(updated_params['gamma'], timesteps)
         deltas = self.create_matrices(updated_params['delta'], timesteps)
@@ -70,10 +70,7 @@ class CallPandemy:
             df_bl = df[cols_bundesland + ['Timestamp']]
             new_colnames = [re.sub(f'_{bundesland}$', '', col) for col in df_bl.columns]
             df_bl.columns = new_colnames
-            try:
-                df_bl['InfectedRatio'] = df_bl['Infectious']/df_bl.sum(1)  # inefficient but should work, problem is that Deutschland is not in population csv
-            except:
-                import pdb; pdb.set_trace()
+            df_bl['InfectedRatio'] = df_bl['Infectious']/df_bl.sum(1)  # inefficient but should work, problem is that Deutschland is not in population csv
             df_bl['Color'] = df_bl['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1-x), keep_alpha=False).upper())
             result_dct[bundesland] = df_bl.to_dict(orient='list')
         return result_dct
@@ -87,8 +84,11 @@ class CallPandemy:
             print(matplotlib.colors.to_hex(mapper.to_rgba(v), keep_alpha=False).upper())
 
 
-    def update_params(self, ordered_params):
+    def update_params(self, ordered_params, beta, gamma, delta):
         #TODO: update logic für Jsons schreiben: bspw. {'2020-01-01': 1, '2020-02-01': 4} und das update so aussieht {'2020-01-15':2} dann nur sachen nach dem 2020-01-15 überschreiben
+        ordered_params['beta'] = update(ordered_params['beta'], beta)
+        ordered_params['gamma'] = update(ordered_params['gamma'], gamma)
+        ordered_params['delta'] = update(ordered_params['delta'], delta)
         return ordered_params
 
     @staticmethod

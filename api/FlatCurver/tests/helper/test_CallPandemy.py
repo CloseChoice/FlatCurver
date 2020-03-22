@@ -29,7 +29,7 @@ class TestCallPandemy(unittest.TestCase):
 
     def test_call_simulation_bundeslaender(self):
         caller = CallPandemy()
-        caller.call_simulation_bundeslaender(beta_dct=None, gamma=None, delta=None, timesteps=50)
+        caller.call_simulation_bundeslaender(beta_dct={'Thüringen': {'2020-04-01': 14}}, gamma={}, delta={}, timesteps=400)
 
     def test_create_matrices(self):
         caller = CallPandemy()

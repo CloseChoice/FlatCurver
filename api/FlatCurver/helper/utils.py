@@ -1,4 +1,5 @@
 import pandas as pd
+import collections.abc
 
 def arrange_dates (indict,timesteps):
     inseries = pd.Series(indict,index=pd.to_datetime([*indict], format='%Y-%m-%d'))
@@ -16,4 +17,12 @@ def arrange_dates (indict,timesteps):
         # fill up
         outseries = inseries.resample("1d").fillna("ffill")
     return outseries
+
+def update(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
 
