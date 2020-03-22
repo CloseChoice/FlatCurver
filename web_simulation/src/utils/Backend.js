@@ -1,5 +1,5 @@
-const BACKEND_URL = "http://localhost:8051/simulate";
-//const BACKEND_URL = "https://flatcurverapi.eu.pythonanywhere.com/simulate";
+//const BACKEND_URL = "http://localhost:8051/simulate";
+const BACKEND_URL = "https://flatcurverapi.eu.pythonanywhere.com/simulate";
 
 class Backend {
   static async runSimulation(payload) {
