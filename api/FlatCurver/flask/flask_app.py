@@ -19,10 +19,10 @@ def simulate():
     from FlatCurver.helper.CallPandemy import CallPandemy
     SIMULATED_TIMESTEPS = 200
 
-    json = request.get_json()
-    json_ger = json.pop('Deutschland')
+    json_data = request.get_json()
+    json_ger = json_data.pop('Deutschland')
     caller = CallPandemy()
-    result_bl = caller.call_simulation_bundeslaender(json, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
+    result_bl = caller.call_simulation_bundeslaender(json_data, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
     result_ger = caller.call_simulation_germany(json_ger, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
     result_bl.update(result_ger)
     return Response(response=json.dumps(result_bl), status=SIMULATED_TIMESTEPS, mimetype="application/json")
