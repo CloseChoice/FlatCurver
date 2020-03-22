@@ -62,7 +62,7 @@ function setDescriptionOfState(mapData, name, text) {
 }
 
 function generateMapData(results, selectedRegion, selectedTimeStamp) {
-  const mapData = Object.assign(MapData, {});
+  const mapData = JSON.parse(JSON.stringify(MapData));
   for (let region of Regions) {
     if (region.label !== "Deutschland") {
       const timeStampIndex = results[region.label]["Timestamp"].findIndex(
@@ -114,7 +114,9 @@ function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
     }
   });
 
-  highlightSelectedState(mapLayout, selectedRegion.label);
+  if (selectedRegion.label !== "Deutschland") {
+    highlightSelectedState(mapLayout, selectedRegion.label);
+  }
   for (let region of Regions) {
     const timeStampIndex = results[region.label]["Timestamp"].findIndex(
       c => c === selectedTimeStamp.toISOString().split("T")[0]
