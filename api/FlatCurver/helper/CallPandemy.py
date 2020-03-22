@@ -4,6 +4,9 @@ import os
 import json
 from collections import OrderedDict
 from copy import copy
+import matplotlib
+from matplotlib import cm
+import re
 
 from ..simulation.PandemicSimulator.PandemicSimulatorMulti import PandemicSimulatorMulti
 from .utils import arrange_dates
@@ -60,14 +63,28 @@ class CallPandemy:
 
     def get_correct_json_bundeslaender(self, df):
         result_dct = {}
+        norm = matplotlib.colors.Normalize(vmin=0.6, vmax=1, clip=True)
+        mapper = cm.ScalarMappable(norm=norm, cmap=cm.RdYlGn)
         for bundesland in list(self.pop_bundeslaender.keys()) + ['Deutschland']:
             cols_bundesland = [col for col in df.columns if bundesland in col]
             df_bl = df[cols_bundesland + ['Timestamp']]
-            new_colnames = [col.replace(f'_{bundesland}', '') for col in df_bl.columns]
+            new_colnames = [re.sub(f'_{bundesland}$', '', col) for col in df_bl.columns]
             df_bl.columns = new_colnames
+            try:
+                df_bl['InfectedRatio'] = df_bl['Infectious']/df_bl.sum(1)  # inefficient but should work, problem is that Deutschland is not in population csv
+            except:
+                import pdb; pdb.set_trace()
+            df_bl['Color'] = df_bl['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1-x), keep_alpha=False).upper())
             result_dct[bundesland] = df_bl.to_dict(orient='list')
         return result_dct
 
+    def convert_to_hex(self, df):
+        df['Color'] = df['InfectedRatio']
+        norm = matplotlib.colors.Normalize(vmin=0, vmax=0.4, clip=True)
+        mapper = cm.ScalarMappable(norm=norm, cmap=cm.RdYlGn)
+
+        for v in [0.2, 0.4]:
+            print(matplotlib.colors.to_hex(mapper.to_rgba(v), keep_alpha=False).upper())
 
 
     def update_params(self, ordered_params):
