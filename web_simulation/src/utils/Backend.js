@@ -4,7 +4,7 @@ class Backend {
   static async runSimulation(payload) {
     const response = await fetch("http://localhost:8051/simulate", {
       method: "POST",
-      body: payload, // json input object
+      body: JSON.stringify(payload), // json input object
       headers: {
         "Content-Type": "application/json"
       }
