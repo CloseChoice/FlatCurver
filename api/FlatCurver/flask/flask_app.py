@@ -1,11 +1,14 @@
 
 # A very simple Flask Hello World app for you to get started with...
 
-from flask import Flask, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
+
+import json
 
 app = Flask(__name__)
 CORS(app)
+
 
 @app.route('/')
 def hello_world():
@@ -14,13 +17,15 @@ def hello_world():
 @app.route('/simulate', methods=['POST', 'GET'])
 def simulate():
     from FlatCurver.helper.CallPandemy import CallPandemy
+    SIMULATED_TIMESTEPS = 200
+
     json = request.get_json()
     json_ger = json.pop('Deutschland')
     caller = CallPandemy()
-    result_bl = caller.call_simulation_bundeslaender(json, gamma={}, delta={}, timesteps=200)
-    result_ger = caller.call_simulation_germany(json_ger, gamma={}, delta={}, timesteps=200)
+    result_bl = caller.call_simulation_bundeslaender(json, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
+    result_ger = caller.call_simulation_germany(json_ger, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
     result_bl.update(result_ger)
-    return result_bl
+    return Response(response=json.dumps(result_bl), status=SIMULATED_TIMESTEPS, mimetype="application/json")
 
 @app.route('/debug', methods=['POST', 'GET'])
 def debug():

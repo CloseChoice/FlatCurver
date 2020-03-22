@@ -62,7 +62,7 @@ function setDescriptionOfState(mapData, name, text) {
 }
 
 function generateMapData(results, selectedRegion, selectedTimeStamp) {
-  const mapData = Object.assign(MapData, {});
+  const mapData = JSON.parse(JSON.stringify(MapData));
   for (let region of Regions) {
     if (region.label !== "Deutschland") {
       const timeStampIndex = results[region.label]["Timestamp"].findIndex(
@@ -90,10 +90,21 @@ function setColorOfState(mapLayout, name, color) {
   mapLayout.mapbox.layers.find(c => c.source.state === name).color = color;
 }
 
+function highlightSelectedState(mapLayout, name) {
+  const highlightLayer = JSON.parse(
+    JSON.stringify(mapLayout.mapbox.layers.find(c => c.source.state === name))
+  );
+  highlightLayer.type = "line";
+  highlightLayer.color = "#ffffff";
+  mapLayout.mapbox.layers.push(highlightLayer);
+}
+
 function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
-  const mapLayout = Object.assign(MapLayout, {
+  const mapLayout = Object.assign(JSON.parse(JSON.stringify(MapLayout)), {
     width: 750,
     height: 580,
+    paper_bgcolor: "#424242",
+    plot_bgcolor: "#424242",
     title: "",
     margin: {
       l: 0,
@@ -102,6 +113,10 @@ function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
       b: 0
     }
   });
+
+  if (selectedRegion.label !== "Deutschland") {
+    highlightSelectedState(mapLayout, selectedRegion.label);
+  }
   for (let region of Regions) {
     const timeStampIndex = results[region.label]["Timestamp"].findIndex(
       c => c === selectedTimeStamp.toISOString().split("T")[0]
@@ -134,7 +149,7 @@ class MapView extends React.Component {
     const { results } = this.props.simulation;
     const { selectedRegion } = this.props;
 
-    console.log(selectedRegion);
+    console.log("MapView Render");
 
     const curvesData = generateCurveData(results, selectedRegion);
     const mapData = generateMapData(
@@ -155,6 +170,17 @@ class MapView extends React.Component {
             <Plot
               data={curvesData}
               layout={{
+                font: {
+                  color: "#ffffff"
+                },
+                plot_bgcolor: "#424242",
+                paper_bgcolor: "#424242",
+                xaxis: {
+                  gridcolor: "#515151"
+                },
+                yaxis: {
+                  gridcolor: "#515151"
+                },
                 width: 750,
                 height: 260,
                 title: `Simulierter Verlauf in ${selectedRegion.label}`,

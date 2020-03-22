@@ -32,7 +32,7 @@ class SimulationProvider extends Component {
   }
 
   run(actions) {
-    let payload = initial_betas;
+    let payload = JSON.parse(JSON.stringify(initial_betas));
     for (let region in actions) {
       for (let act of Object.keys(actions[region]).sort(
         c => actions[region][c].date
