@@ -2,7 +2,8 @@ import unittest
 import requests
 from collections import OrderedDict
 import numpy as np
-from ...helper.CallPandemy import CallPandemy
+from FlatCurver.helper.CallPandemy import CallPandemy
+import json
 
 
 class TestCallPandemy(unittest.TestCase):
@@ -29,7 +30,9 @@ class TestCallPandemy(unittest.TestCase):
 
     def test_call_simulation_bundeslaender(self):
         caller = CallPandemy()
-        caller.call_simulation_bundeslaender(beta_dct={'Thüringen': {'2020-04-01': 14}}, gamma={}, delta={}, timesteps=400)
+        json_ = json.load(open('data.json'))
+        # json_.pop('Deutschland')
+        caller.call_simulation_bundeslaender(beta_dct=json_, gamma={}, delta={}, timesteps=400)
 
     def test_create_matrices(self):
         caller = CallPandemy()

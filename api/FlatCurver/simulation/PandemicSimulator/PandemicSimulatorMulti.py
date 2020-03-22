@@ -42,12 +42,15 @@ class PandemicSimulatorMulti(PandemicSimulator):
 
     def deriv(self, t, y):
         """function which is to be optimized with scipy.integrate.solve_ivp."""
-        S, E, I, R = [y[self.ndim * i:self.ndim * (i + 1)] for i in range(4)]
-        td = int(t)
-        dSdt = -1 * np.dot(self.beta[td], I / self.N) * S
-        dEdt = np.dot(self.delta[td], I)
-        dRdt = np.dot(self.gamma[td], I)
-        dIdt = 1 / self.N * np.dot(self.beta[td], I) * S - dEdt - dRdt
+        try:
+            S, E, I, R = [y[self.ndim * i:self.ndim * (i + 1)] for i in range(4)]
+            td = int(t)
+            dSdt = -1 * np.dot(self.beta[td], I / self.N) * S
+            dEdt = np.dot(self.delta[td], I)
+            dRdt = np.dot(self.gamma[td], I)
+            dIdt = 1 / self.N * np.dot(self.beta[td], I) * S - dEdt - dRdt
+        except:
+            import pdb; pdb.set_trace()
         return [*dSdt, *dEdt, *dIdt, *dRdt]
 
     def plot(self, sol):

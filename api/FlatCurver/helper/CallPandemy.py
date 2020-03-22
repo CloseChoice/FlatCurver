@@ -33,8 +33,6 @@ class CallPandemy:
     def construct_time_dependent_beta(self, beta_dct, timesteps):
         return arrange_dates(beta_dct, timesteps=timesteps)
 
-
-
     def call_simulation_bundeslaender(self, beta_dct, gamma, delta, timesteps):
         with open(self.PATH_TO_DEFAULT_JSON, 'r') as f:
             default_params = json.load(f)
@@ -43,6 +41,7 @@ class CallPandemy:
         betas = self.create_matrices(updated_params['beta'], timesteps)
         gammas = self.create_matrices(updated_params['gamma'], timesteps)
         deltas = self.create_matrices(updated_params['delta'], timesteps)
+        import pdb; pdb.set_trace()
         N = np.array(list(self.pop_bundeslaender.values()))
 
         pandemic_caller = PandemicSimulatorMulti(beta=betas, gamma=gammas, delta=deltas, N=N, group_names=list(self.pop_bundeslaender.keys()), timesteps=timesteps)
@@ -51,7 +50,7 @@ class CallPandemy:
         df = self.adjust_dataframe_for_export(df)
         df = self.aggregate_bundeslaender_result(df)
         result_dct = self.get_correct_json_bundeslaender(df)
-        return json.dump(result_dct, open('simulate_bundeslaender.json', 'w'), ensure_ascii=False)
+        return result_dct
 
     @staticmethod
     def aggregate_bundeslaender_result(df):
@@ -59,7 +58,6 @@ class CallPandemy:
         for status in ['Susceptible', 'Dead', 'Infectious', 'Recovered']:
             df_agg[f'{status}_Deutschland'] = df[[col for col in df.columns if status in col]].sum(1)
         return df_agg
-
 
     def get_correct_json_bundeslaender(self, df):
         result_dct = {}
