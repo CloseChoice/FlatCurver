@@ -130,3 +130,7 @@ dmypy.json
 
 # PyCharm metadata
 .idea
+
+# Mac
+.DS_Store
+.gitignore~
