@@ -90,8 +90,17 @@ function setColorOfState(mapLayout, name, color) {
   mapLayout.mapbox.layers.find(c => c.source.state === name).color = color;
 }
 
+function highlightSelectedState(mapLayout, name) {
+  const highlightLayer = JSON.parse(
+    JSON.stringify(mapLayout.mapbox.layers.find(c => c.source.state === name))
+  );
+  highlightLayer.type = "line";
+  highlightLayer.color = "#ffffff";
+  mapLayout.mapbox.layers.push(highlightLayer);
+}
+
 function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
-  const mapLayout = Object.assign(MapLayout, {
+  const mapLayout = Object.assign(JSON.parse(JSON.stringify(MapLayout)), {
     width: 750,
     height: 580,
     paper_bgcolor: "#424242",
@@ -104,6 +113,8 @@ function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
       b: 0
     }
   });
+
+  highlightSelectedState(mapLayout, selectedRegion.label);
   for (let region of Regions) {
     const timeStampIndex = results[region.label]["Timestamp"].findIndex(
       c => c === selectedTimeStamp.toISOString().split("T")[0]

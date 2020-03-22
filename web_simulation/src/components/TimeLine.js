@@ -23,6 +23,7 @@ class TimeLine extends React.Component {
 
   render() {
     const { theme } = this.props;
+    console.log("theme.palette.primary", theme.palette.primary);
     return (
       <Grid item xs={12} style={{ eight: "200px" }}>
         <Paper>

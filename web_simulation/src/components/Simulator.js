@@ -114,13 +114,17 @@ class Simulator extends React.Component {
     const { running } = this.props.simulation;
     const { selectedRegion, actions, selectedTimeStamp } = this.state;
     return (
-      <Container maxWidth="xl" style={{ paddingTop: 30 }}>
+      <Container maxWidth="xl" style={{ paddingTop: 30, overflowX: "hidden" }}>
         {running && (
           <LinearProgress
             style={{ position: "fixed", top: 0, left: 0, right: 0 }}
           />
         )}
-        <Grid container spacing={4} style={{ height: "100%", marginLeft: 0 }}>
+        <Grid
+          container
+          spacing={4}
+          style={{ height: "100%", marginLeft: 0, overflowX: "hidden" }}
+        >
           <Grid item container xs={7} spacing={4}>
             <Grid item xs={12}>
               <Typography variant="h4">
@@ -145,7 +149,7 @@ class Simulator extends React.Component {
                     ))}
                   </Select>
                 </Toolbar>
-                <div style={{ overflow: "auto", height: 620 }}>
+                <div style={{ overflow: "hidden", height: 580 }}>
                   <Table size="small" style={{ tableLayout: "fixed" }}>
                     <TableHead>
                       <TableRow>
@@ -235,6 +239,44 @@ class Simulator extends React.Component {
             onSelectRegion={this.onMapSelectRegion}
             selectedTimeStamp={selectedTimeStamp}
           />
+          <Grid item xs={12} style={{ overflowX: "hidden" }}>
+            <Paper
+              style={{
+                textAlign: "left",
+                padding: 10,
+                marginRight: 32,
+                marginBottom: 32
+              }}
+            >
+              <Typography variant="h6">Erklärung Simulator</Typography>
+              In der Deutschlandkarte werden die Bundesländer abhängig von der
+              Anzahl der Infizierten eingefärbt. Mit dem Zeitstrahl links unten
+              lassen sich auch vergangene Werte betrachten. Dieser Zeitstrahl
+              hört nicht bei heute auf, man kann auch anschauen, wie die
+              Situation nächste Woche aussehen könnte.
+              <br />
+              <br />
+              Für die einzelnen Bundesländer oder auch für ganz Deutschland
+              werden rechts oben Kurven dargestellt, wie viele Menschen dort
+              wann noch empfänglich, infiziert, genesen bzw. verstorben sind.
+              <br />
+              Hierauf kann man nun Einfluss ergreifen, indem man in der Tabelle
+              links oben Maßnahmen für ein Bundesland oder ganz Deutschland
+              hinzufügt, das Datum dieser oder auch die Intensität der Umsetzung
+              ändert.
+              <br />
+              Welche Maßnahmen wären wann notwendig gewesen, damit die maximale
+              Anzahl an gleichzeitig Infizierten in Deinem Bundesland nur halb
+              so groß werden würde?
+              <br />
+              <br />
+              <b>WICHTIG:</b> Der Einfluss einzelner Maßnahmen auf die Kurven
+              ist <i>nicht statistisch belegt</i> sondern von Laien in kurzer
+              Zeit implementiert worden. Die resultierenden Kurven sind also mit
+              Vorsicht zu betrachten und simulieren nur einen <i>möglichen</i>{" "}
+              Verlauf.
+            </Paper>
+          </Grid>
         </Grid>
       </Container>
     );
