@@ -68,12 +68,12 @@ function generateMapData(results, selectedRegion) {
       setDescriptionOfState(
         mapData,
         region.label,
-        `Verstorben: ${Math.round(
-          results[region.label]["Dead"].slice(-1)[0]
-        )}<br>Infiziert: ${Math.round(
+        `Infiziert: ${Math.round(
           results[region.label]["Infectious"].slice(-1)[0]
         )}<br>Genesen: ${Math.round(
           results[region.label]["Recovered"].slice(-1)[0]
+        )}<br>Verstorben: ${Math.round(
+          results[region.label]["Dead"].slice(-1)[0]
         )}<br>Empfänglich: ${Math.round(
           results[region.label]["Susceptible"].slice(-1)[0]
         )}`
@@ -102,7 +102,7 @@ function generateMapLayout(results, selectedRegion) {
 
   setColorOfState(mapLayout, "Bayern", "#ff6666");
   setColorOfState(mapLayout, "Baden-Württemberg", "#ff4444");
-  setColorOfState(mapLayout, "Nordrhein-Westfalen", "#ff1111");
+  setColorOfState(mapLayout, "Nordrhein-Westfalen", "#ff1111ff");
   for (let region of Regions) {
     /*if (region.label !== "Deutschland") {
       console.log(region.label);

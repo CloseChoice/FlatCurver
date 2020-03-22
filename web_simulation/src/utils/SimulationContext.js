@@ -1,5 +1,8 @@
 import React, { Component } from "react";
 import dummy_data from "./dummy_results.json";
+import initial_betas from "./initial_betas.json";
+import Actions from "../data/Actions";
+import Backend from "./Backend";
 
 const SimulationContext = React.createContext();
 
@@ -28,28 +31,42 @@ class SimulationProvider extends Component {
     };
   }
 
-  show() {
-    this.setState({ show: true });
-  }
-
-  hide() {
-    this.setState({ show: false });
-  }
-
-  load(func) {
-    this.setState({ show: true });
-    setTimeout(() => {
-      func();
-      this.setState({ show: false });
-    }, 0);
+  run(actions) {
+    console.log(actions);
+    let payload = initial_betas;
+    for (let region in actions) {
+      for (let act of Object.keys(actions[region]).sort(
+        c => actions[region][c].date
+      )) {
+        if (actions[region][act].date !== null) {
+          const betaOld = Object.values(payload[region]).slice(-1)[0];
+          const actionTemplate = Actions.find(c => c.label === act);
+          console.log(("act:", Object.values(payload[region])));
+          console.log(("actionTemplate:", actionTemplate));
+          const beta = actionTemplate.apply(
+            betaOld,
+            actions[region][act].slider
+          );
+          payload[region][
+            actions[region][act].date.toISOString().split("T")[0]
+          ] = beta;
+          console.log("betaOld:", betaOld);
+          console.log("beta:", beta);
+          console.log(actions[region][act]);
+        }
+      }
+    }
+    console.log(payload);
+    Backend.runSimulation(payload).then(results => {
+      this.setState({ results: results });
+    });
   }
 
   render() {
     return (
       <SimulationContext.Provider
         value={{
-          run: () => this.show(),
-          hide: () => this.hide(),
+          run: actions => this.run(actions),
           results: this.state.results
         }}
       >
