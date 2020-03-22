@@ -33,7 +33,7 @@ labels = df_model.label.unique()
 
 # Get forecasts
 for label in labels:
-    print('Predicting {state}'.format(state=label))
+    print('Predicting {label}'.format(label=label))
     df_forecast = df_model[df_model.label == label]
     payload = build_payload(df_forecast, horizon=1)
     response = requests.post(url='https://us-central1-flatcurver.cloudfunctions.net/forecast', data=json.dumps(payload))
