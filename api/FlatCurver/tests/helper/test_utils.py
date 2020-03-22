@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-import FlatCurver.helper.utils as utils
+from ...helper.utils import arrange_dates
 
 class TestMatrixCreatorHelper(unittest.TestCase):
 
@@ -11,7 +11,7 @@ class TestMatrixCreatorHelper(unittest.TestCase):
         cls.timesteps = 100
 
     def test_arrange_dates(self):
-        srs = utils.arrange_dates(self.indict, self.timesteps)
+        srs = arrange_dates(self.indict, self.timesteps)
         expected_keys = pd.date_range("2020-01-01", periods=self.timesteps)
         expected_values = [1] * 31 + [10] * 29 + [15] * 40
         expected_srs = pd.Series(expected_values, index=expected_keys)
