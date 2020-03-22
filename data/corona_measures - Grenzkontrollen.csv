@@ -1,11 +1,11 @@
 bundesland,nachbarstaat,gueltig_ab,gueltig_bis,published,Quelle
 BY,Österreich,2020-03-16,2020-03-26,2020-03-15,https://www.bmi.bund.de/SharedDocs/pressemitteilungen/DE/2020/03/grenzschliessung-corona.html
 BY,Tschechien,2020-03-16,2020-03-26,2020-03-15,
-NW,Belgien,,,,
-NW,Belgien,,,,
+NW,Belgien,na,na,na,
+NW,Belgien,na,na,na,
 BW,Frankreich,2020-03-16,2020-03-26,2020-03-15,
 BW,Schweiz,2020-03-16,2020-03-26,2020-03-15,
-NI,Niederlande,,,,
+NI,Niederlande,na,na,na,
 SN,Tschechien,2020-03-16,2020-03-26,2020-03-15,
 SN,Polen,2020-03-16,2020-03-26,2020-03-15,
 RP,Luxemburg,2020-03-16,2020-03-26,2020-03-15,
