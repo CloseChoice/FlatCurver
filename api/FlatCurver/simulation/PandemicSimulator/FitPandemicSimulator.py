@@ -8,20 +8,21 @@ from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSi
 
 class FitPandemicSimulator(PandemicSimulator):
     def __init__(self, beta, gamma, delta, N, y, timesteps=400):
-        # TODO: make beta time dependent
-        self.beta = self.transform_beta(beta, timesteps)
-        self.gamma = gamma
-        self.delta = delta
+
+        self.beta = self.make_time_dependent(beta, timesteps)
+        self.gamma = self.make_time_dependent(gamma, timesteps)
+        self.delta = self.make_time_dependent(delta, timesteps)
         self.N = N
-        self.y = y
         self.timesteps = timesteps
         self.y0 = [self.N - 1, 0, 1, 0]
+        self.y = y
         self.dates = pd.date_range(start=self.START_DATE, periods=timesteps)
-        self.assertions()
+        self.group_names = group_names
 
     def assertions(self):
         assert len(self.beta) == self.timesteps
         assert len(self.y) == self.timesteps
+        assert not self.group_names or isinstance(self.group_names, list)
 
     def set_y0(self, y):
         self.y0 = y[0,:]
