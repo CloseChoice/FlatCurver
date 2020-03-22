@@ -15,7 +15,7 @@ import argparse
 import pandas
 import numpy as np
 
-def fetch_infection_data_from_rki(bundesland:str="Hamburg",offset=0):
+def fetch_infection_data_from_rki(bundesland:str,offset=0):
     """
     Fetch Covid-19-Cases from 
     https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
@@ -56,7 +56,7 @@ def fetch_infection_data_from_rki(bundesland:str="Hamburg",offset=0):
     
     return df
 
-def fetch_death_data_from_rki(bundesland:str="Hamburg",offset=0):
+def fetch_death_data_from_rki(bundesland:str,offset=0):
     """
     Fetch Covid-19-Cases from 
     https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
@@ -150,8 +150,17 @@ class DataAcquisition:
   """An Utility class for data acquisition."""
 
   def fetch_rki_data_mergable (self) -> pandas.DataFrame:
-    rki_infection_data = fetch_infection_data_from_rki()
-    rki_death_data = fetch_death_data_from_rki()
+    df_info = self.load_general_stats()
+
+    rki_infection_data = fetch_infection_data_from_rki(df_info['Bundesland'][0])
+    rki_death_data = fetch_death_data_from_rki(df_info['Bundesland'][0])
+
+    for bundesland in df_info['Bundesland'][1:]:
+      inf_df = fetch_infection_data_from_rki(bundesland)
+      rki_infection_data.append(inf_df)
+      ded_df = fetch_death_data_from_rki(bundesland)
+      rki_death_data.append(ded_df)
+
     return get_pivoted_country_data(rki_death_data,rki_infection_data)
 
   def fetch_germany_morgenpost(self) -> pandas.DataFrame:
@@ -272,7 +281,7 @@ class DataAcquisition:
       collecting_df = bland_df.merge(collecting_df,how="outer",on="Datum",suffixes=("",""))
 
     df_rki = self.fetch_rki_data_mergable()
-
+  
     collecting_df = collecting_df.merge(df_rki,how="outer",on="Datum",suffixes=(False,False))
 
     collecting_df = collecting_df.fillna(value=0) # Fill every None field from the outer joins with zeroes
