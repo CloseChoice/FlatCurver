@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.integrate import solve_ivp
+import math
 
 
 from FlatCurver.simulation.PandemicSimulator.PandemicSimulator import PandemicSimulator
@@ -16,6 +17,15 @@ def vhelp(x):
         return y
 
 vfunc = np.vectorize(lambda x: vhelp(x))
+
+def linear_lethality_function(infected_pop,lethality_factor,lower_bound,upper_bound):
+    base = 1
+    if infected_pop <= lower_bound:
+        return base
+    elif infected_pop >= upper_bound:
+        return base + lethality_factor
+    else: 
+        return base + (infected_pop/upper_bound)*lethality_factor
 
 
 class PandemicSimulatorMulti(PandemicSimulator):
@@ -49,9 +59,19 @@ class PandemicSimulatorMulti(PandemicSimulator):
 
         self.hospital_rates = hospital_rates 
         # A percentage how many people of the population can be infected at once without applying the additional lethality factor
-        # Hospital_rates are also a n-dimensional vector
+        # Hospital_rates are also a n-dimensional vector of tuples (lower_bound,upper_bound)
+        # When in doubt, set both bounds on the same value (hard-skip)
+        # If not wanted, do not pass it, or set it to None
+
         self.lethality_factor = lethality_factor
         # A coefficient to the lethality if the hospital_rates are exceeded
+        # At the lower bound (and below) of the hospital rates the delta values are used as is
+        # At the upper bound (and above) of the hospital rates the delta values are multiplied by the lethality factor
+        # Between the upper and lower bound, the lethality will be adjusted to transition to be "more deadly", see lethality_transition_function
+
+        self.lethality_transition_function = linear_lethality_function 
+        # The transition function from reaching the lower-hospital bed bound to the upper bound
+        # The given default is the linear function 
 
     @staticmethod
     def transform_beta(beta, timesteps):
@@ -89,8 +109,8 @@ class PandemicSimulatorMulti(PandemicSimulator):
 
             if self.hospital_rates and self.lethality_factor:
                 for i in range(len(I)):
-                    if I[i]>self.hospital_rates[i]:
-                        temp_delta[i][i] = self.delta[i][i]*self.lethality_factor
+                    temp_delta[i][i] = self.delta[i][i] * self.lethality_transition_function(I[i],self.lethality_factor,self.hospital_rates[i][0],self.hospital_rates[i][1])
+            # After Chaning the delta values for this step, we also need to fix the gamma values to be 1-delta 
             temp_gamma = vfunc(temp_delta)
 
             dDdt = np.dot(temp_delta, I)
