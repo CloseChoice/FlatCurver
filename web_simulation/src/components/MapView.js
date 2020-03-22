@@ -1,10 +1,12 @@
 import React from "react";
 import { Grid, Paper } from "@material-ui/core";
+import PropTypes from "prop-types";
 
 import MapViewLayout from "../data/MapViewLayout";
 
 import Plotly from "plotly.js-mapbox-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
+import { withSimulation } from "../utils/SimulationContext";
 const Plot = createPlotlyComponent(Plotly);
 
 //https://plot.ly/create/?fid=empet:15047
@@ -81,19 +83,20 @@ const map_data = [
 ];
 
 class MapView extends React.Component {
-  state = { value: 0, previous: 0 };
-
   render() {
+    const { results } = this.props.simulation;
+    const { selectedRegion } = this.props;
+
     return (
       <Grid item xs={4} container>
-        <Grid item xs={12}>
+        <Grid item xs={12} style={{ marginBottom: 32 }}>
           <Paper>
             <Plot
               data={map_data}
               frames={[]}
               layout={Object.assign(MapViewLayout, {
-                width: "590",
-                height: "580",
+                width: 590,
+                height: 580,
                 title: "",
                 margin: {
                   l: 0,
@@ -111,20 +114,45 @@ class MapView extends React.Component {
             <Plot
               data={[
                 {
-                  x: [1, 2, 3],
-                  y: [2, 6, 3],
+                  x: results[selectedRegion.label]["Timestamp"],
+                  y: results[selectedRegion.label]["Susceptible"],
                   type: "scatter",
-                  mode: "lines+markers",
+                  name: "Susceptible",
+                  mode: "lines",
+                  marker: { color: "orange" }
+                },
+                {
+                  x: results[selectedRegion.label]["Timestamp"],
+                  y: results[selectedRegion.label]["Dead"],
+                  type: "scatter",
+                  name: "Dead",
+                  mode: "lines",
+                  marker: { color: "black" }
+                },
+                {
+                  x: results[selectedRegion.label]["Timestamp"],
+                  y: results[selectedRegion.label]["Infectious"],
+                  type: "scatter",
+                  name: "Infectious",
+                  mode: "lines",
                   marker: { color: "red" }
+                },
+                {
+                  x: results[selectedRegion.label]["Timestamp"],
+                  y: results[selectedRegion.label]["Recovered"],
+                  type: "scatter",
+                  name: "Recovered",
+                  mode: "lines",
+                  marker: { color: "green" }
                 }
               ]}
               layout={{
-                width: "580",
-                height: 240,
+                width: 580,
+                height: 260,
                 title: "Epidemie Verlauf",
                 margin: {
-                  l: 20,
-                  r: 20,
+                  l: 30,
+                  r: 0,
                   t: 50,
                   b: 30
                 }
@@ -137,20 +165,9 @@ class MapView extends React.Component {
   }
 }
 
-/*
+MapView.propTypes = {
+  selectedRegion: PropTypes.object.isRequired,
+  simulation: PropTypes.object.isRequired
+};
 
-        <Plot
-          data={[
-            {
-              x: [1, 2, 3],
-              y: [2, 6, 3],
-              type: "scatter",
-              mode: "lines+markers",
-              marker: { color: "red" }
-            }
-          ]}
-          layout={{ width: "100%", height: 240, title: "A Fancy Plot" }}
-        />
-*/
-
-export default MapView;
+export default withSimulation(MapView);

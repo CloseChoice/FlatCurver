@@ -96,7 +96,7 @@ class Simulator extends React.Component {
     const { selectedRegion, actions } = this.state;
     return (
       <Container maxWidth="xl" style={{ paddingTop: 30 }}>
-        <Grid container spacing={4} style={{ height: "100%" }}>
+        <Grid container spacing={4} style={{ height: "100%", marginLeft: 0 }}>
           <Grid item container xs={8} spacing={4}>
             <Grid item xs={12}>
               <Typography variant="h4">
@@ -192,7 +192,7 @@ class Simulator extends React.Component {
             </Grid>
             <TimeLine />
           </Grid>
-          <MapView />
+          <MapView selectedRegion={selectedRegion} />
         </Grid>
       </Container>
     );

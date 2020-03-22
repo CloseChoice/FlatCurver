@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import dummy_data from "./dummy.json";
 
 const SimulationContext = React.createContext();
 
@@ -22,7 +23,8 @@ class SimulationProvider extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      show: false
+      results: dummy_data,
+      parameters: {}
     };
   }
 
@@ -46,9 +48,9 @@ class SimulationProvider extends Component {
     return (
       <SimulationContext.Provider
         value={{
-          show: () => this.show(),
+          run: () => this.show(),
           hide: () => this.hide(),
-          load: callback => this.load(callback)
+          results: this.state.results
         }}
       >
         {this.props.children}
