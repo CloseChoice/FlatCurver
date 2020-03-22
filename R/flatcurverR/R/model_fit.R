@@ -8,12 +8,14 @@
 #' 
 #' @param data The data table returned from the function \code{add_growth_rates}.
 #' @param map_restrictions The mapping table returned by the function \code{generate_map_restrictions}.
+#' @param cutoff_date The cut-off data at which the effects should be estimated (only used here as a label in the resulting table of estimates).
 #'
 #' @details The model adds a random intercept and a random effect for the variable 'day' (days since first infection) per federal state.  In addition, fixed effects for the number of days since the effectuation of each restriction are added.
 #'
 #' @return The fitted model and the coefficient estimations for the fixed effects are returned as a data.table.
 #'
 #' @import lme4
+#' @importFrom stats formula predict qnorm
 #' @export
 fit_lme <- function (data, map_restrictions, cutoff_date) {
   # Response variable
