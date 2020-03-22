@@ -31,7 +31,7 @@ df_model = df[df.parent == 'Deutschland'].sort_values(by=['label', 'date'])
 # States
 labels = df_model.label.unique()
 
-# Get forecasts
+# Get forecast
 for label in labels:
     print('Predicting {label}'.format(label=label))
     df_forecast = df_model[df_model.label == label]
