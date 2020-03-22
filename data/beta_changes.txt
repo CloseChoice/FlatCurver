@@ -3,32 +3,37 @@ beta* = factor_.. * beta
 
 
 (Hoch-)Schulen / Kitas schließen:
+	# kein Slider
 	20% in DE unter 25, also 1/5 betroffen. 
 	die nur noch mit 1/10 so viel Kontakt
 
 	factor_Schule = 0.82 # = 1/5*1/10 + 4/5*1
 
 (unwichtige) Läden schließen:
+	# kein Slider
 	https://de.statista.com/statistik/daten/studie/665736/umfrage/umfrage-zur-freizeit-beschaeftigung-shopping-einkaufs-schaufensterbummel-nach-lebensphase/
 	60% gehn einmal die Woche bummeln/shoppen, also 3/5 betroffen
 	die (an dem Tag) nur noch mit 1/20 Kontakt
 
 	factor_shopping =  0.91 # = 3/5 (1/7*1/20 + 6/7*1) + 2/5*1
 
-Ausgangsperre:
-	circa 25% müssen trotzdem gehen, also 3/4 betroffen.
+Ausgangsperre/Social Distancing:
+	# mit Slider
+	circa 25% müssen trotzdem gehen, also max 3/4 betroffen.
 	die (durchschnittlich geschätzt, abhängig vom Sozialverhalten) nur noch mit 1/40 Kontakt
 
-	factor_Ausgangssperre = 0.27 # 3/4*1/40 + 1/4*1
+	factor_Ausgangssperre_max = 0.27 # 3/4*1/40 + 1/4*1
 
 Homeoffice:
-	1/2 beschäftigt, davon zwischen 20 - 50% im Homeoffice
+	# mit Slider
+	1/2 beschäftigt, davon max 50% im Homeoffice
 	die nur noch mit 1/5 Kontakt
 
-	factor_Homeoffice_min = 0.92 # bei 10% von allen im Homeoffice
+	#factor_Homeoffice_min* = 0.92 # bei 10% von allen im Homeoffice
 	factor_Homeoffice_max = 0.8 # bei 25% insgesamt im Homeoffice
 
 Restaurant schließen:
+	# kein Slider
 	14% einmal die Woche, 1Mio im Gewerbe tätig, #also circa 3/20 betroffen,
 	Kunden (an dem Tag) nur noch mit 3/5 Kontakt,
 	Angestellte nur noch mit 1/50 Kontakt
@@ -36,11 +41,22 @@ Restaurant schließen:
 	factor_Restaurants = 0.98 # = 14/100*(1/7*3/5 + 6/7) + 1/80*1/50 + .8475
 
 Kulturprogramme schließen:
+	# kein Slider
 	2.5% mindestens einmal die Woche, 
 	geschätzt so wie bei Restaurants
 
 	factor_Kultur = 0.98
 
+Erkrankte isolieren:
+	# mit Slider 
+	vom Nutzer: Isol in %, wie viele der Erkrankten in Quarantäne
+	AKTUELL_ERKRANKTE betroffen,
+	die noch mit 0 Kontakt,
+
+	factor_Isolation = 1- isol * AKTUELL_ERKRANKTE / N
+	mit N Anzahl Menschen in Bevölkerung
+
 
 Grenzen schließen:
+	# mit Slider 
 	keine Kreuzkontakte mehr
