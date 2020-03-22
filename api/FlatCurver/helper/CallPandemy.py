@@ -69,8 +69,8 @@ class CallPandemy:
             cols_bundesland = [col for col in df.columns if bundesland in col]
             df_bl = df[cols_bundesland + ['Timestamp']]
             df_bl = self.rename_cols(df_bl, bundesland)
-            df_bl['InfectedRatio'] = df_bl['Infectious']/self.pop_bundeslaender[bundesland]
-            df_bl['Color'] = df_bl['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1-x),
+            df_bl.loc[:, 'InfectedRatio'] = df_bl['Infectious']/self.pop_bundeslaender[bundesland]
+            df_bl.loc[:, 'Color'] = df_bl['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1-x),
                                                                                              keep_alpha=False).upper())
             result_dct[bundesland] = df_bl.to_dict(orient='list')
         return result_dct

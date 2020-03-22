@@ -16,7 +16,11 @@ class TestCallPandemy(unittest.TestCase):
         cls.beta_dct = {'2020-01-27': 0.3, '2020-03-10': 0.4}
         cls.timesteps = 200
         cls.url = "http://flatcurverapi.eu.pythonanywhere.com"
-        cls.ordered_betas = OrderedDict({"Baden-Wuerttemberg":  {"2020-01-27":  1, "2020-02-25": 1.5}, "Bayern":  {"2020-01-27":  4, "2020-03-01": 1.7}}.items())
+        cls.ordered_betas = OrderedDict({"Baden-Wuerttemberg":  {"2020-01-27":  1, "2020-02-25": 1.5}, "Bayern":  {"2020-01-27":  4, "2020-03-01": 1.7}})
+        path = os.path.dirname(os.path.abspath(__file__))
+        data_json_path = os.path.join(path, 'data.json')
+        cls.all_betas = json.load(open(data_json_path))
+        cls.all_betas_de = cls.all_betas.update(Deutschland=cls.beta_dct)
 
     def test_call_simulation_germany(self):
         caller = CallPandemy()
@@ -27,16 +31,17 @@ class TestCallPandemy(unittest.TestCase):
         response = requests.post(self.url + '/simulate', json=self.beta_dct)
         assert response
 
+    def test_online_api_all(self):
+        response = requests.post(self.url + '/simulate', json=self.all_betas_de)
+        assert response
+
     def test_online_api_debug(self):
         response = requests.get(self.url + '/debug', json=self.beta_dct)
         assert response
 
     def test_call_simulation_bundeslaender(self):
         caller = CallPandemy()
-        path = os.path.dirname(os.path.abspath(__file__))
-        data_json_path = os.path.join(path, 'data.json')
-        json_ = json.load(open(data_json_path))
-        caller.call_simulation_bundeslaender(beta_dct=json_, gamma={}, delta={}, timesteps=400)
+        caller.call_simulation_bundeslaender(beta_dct=self.all_betas, gamma={}, delta={}, timesteps=400)
 
     def test_create_matrices(self):
         caller = CallPandemy()
