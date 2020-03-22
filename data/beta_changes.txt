@@ -1,15 +1,16 @@
 beta = R_0/t
 beta* = factor_.. * beta
 
+beispielhaft angenommen
 
-(Hoch-)Schulen / Kitas schließen:
+Schließung Bildungseinrichtungen / Kitas:
 	# kein Slider
 	20% in DE unter 25, also 1/5 betroffen. 
 	die nur noch mit 1/10 so viel Kontakt
 
 	factor_Schule = 0.82 # = 1/5*1/10 + 4/5*1
 
-(unwichtige) Läden schließen:
+Beschränkung Einzelhandel:
 	# kein Slider
 	https://de.statista.com/statistik/daten/studie/665736/umfrage/umfrage-zur-freizeit-beschaeftigung-shopping-einkaufs-schaufensterbummel-nach-lebensphase/
 	60% gehn einmal die Woche bummeln/shoppen, also 3/5 betroffen
@@ -17,22 +18,21 @@ beta* = factor_.. * beta
 
 	factor_shopping =  0.91 # = 3/5 (1/7*1/20 + 6/7*1) + 2/5*1
 
-Ausgangsperre/Social Distancing:
+Ausgangssperre:
 	# mit Slider
 	circa 25% müssen trotzdem gehen, also max 3/4 betroffen.
 	die (durchschnittlich geschätzt, abhängig vom Sozialverhalten) nur noch mit 1/40 Kontakt
 
 	factor_Ausgangssperre_max = 0.27 # 3/4*1/40 + 1/4*1
 
-Homeoffice:
-	# mit Slider
-	1/2 beschäftigt, davon max 50% im Homeoffice
-	die nur noch mit 1/5 Kontakt
+Social Distancing (Kneipen, Abendprogramm, Kultur, Sport): #KEIN SPAß!
+	# mit Slider	
+	alle betroffen
+	die nur noch bis zu 1/20 Kontakt an drei Tagen, bis zu 1/2 Kontakt an vier Tagen. Faktor Mensch ist dumm: + 0.2
 
-	#factor_Homeoffice_min* = 0.92 # bei 10% von allen im Homeoffice
-	factor_Homeoffice_max = 0.8 # bei 25% insgesamt im Homeoffice
+	factor_Social_max = 0.51 # = 0.31 + 0.2
 
-Restaurant schließen:
+Beschränkung Restaurants:
 	# kein Slider
 	14% einmal die Woche, 1Mio im Gewerbe tätig, #also circa 3/20 betroffen,
 	Kunden (an dem Tag) nur noch mit 3/5 Kontakt,
@@ -40,14 +40,16 @@ Restaurant schließen:
 
 	factor_Restaurants = 0.98 # = 14/100*(1/7*3/5 + 6/7) + 1/80*1/50 + .8475
 
-Kulturprogramme schließen:
-	# kein Slider
-	2.5% mindestens einmal die Woche, 
-	geschätzt so wie bei Restaurants
+Veranstaltungsverbot:
+	# mit Slider
+	5% betroffen GoDi, insgesamt circa 1/5 betroffen an zwei Tagen
+	dann nur noch mit bis zu 1/10 Kontakt
 
-	factor_Kultur = 0.98
+	factor_Veranstaltung_max = 0.95 # = 1/5*(2/7*1/10 + 5/7) + 4/5*1
 
-Erkrankte isolieren:
+Isolation von Gefährdeten: # evtl rauslassen
+
+Isolation von Kranken:
 	# mit Slider 
 	vom Nutzer: Isol in %, wie viele der Erkrankten in Quarantäne
 	AKTUELL_ERKRANKTE betroffen,
@@ -57,6 +59,17 @@ Erkrankte isolieren:
 	mit N Anzahl Menschen in Bevölkerung
 
 
-Grenzen schließen:
+Grenzbeschränkung:
 	# mit Slider 
 	keine Kreuzkontakte mehr
+
+
+
+###############
+Homeoffice:
+	# mit Slider
+	1/2 beschäftigt, davon max 50% im Homeoffice
+	die nur noch mit 1/5 Kontakt
+
+	#factor_Homeoffice_min* = 0.92 # bei 10% von allen im Homeoffice
+	factor_Homeoffice_max = 0.8 # bei 25% insgesamt im Homeoffice
