@@ -157,10 +157,6 @@ ggplot(dt_plot, aes(x = day, y = lograte_smooth2)) + geom_hline(yintercept = 1, 
 
 
 
-# Inkubationszeit ist 4-14 Tage.  Anstatt Dummyvariablen für die Maßnahmen zu verwenden wird die Anzahl der Tage seit Einführung der Maßnahme geteilt durch 14, aber nach oben auf 1 beschränkt, verwendet für das OLS-Modell.  Für das GAM wird die Anzahl der Tage seit Einführung verwendet
-
-
-
 
 
 
@@ -169,7 +165,7 @@ ggplot(dt_plot, aes(x = day, y = lograte_smooth2)) + geom_hline(yintercept = 1, 
 # Lineares gemischtes Modell
 library("lme4")
 response <- "number_log_smooth"
-vars_random <- c("1", "day")
+vars_random <- c("day")
 vars_fixed <- names(measures)[dtDEconfirmed[, lapply(.SD, function (x) mean(x == FALSE)), .SDcols = names(measures)] < 0.95]
 f_lme <- formula(paste(c(
   response,
@@ -182,7 +178,6 @@ mod_lme <- lmer(f_lme, data = dtDEconfirmed)
 summary(mod_lme)
 # Bis auf die Maßnahmen schutz_gef_personen und pandemieplan ist der Effekt wie erwünscht negativ, die Paramter sind allerdings nicht alle signifikant verschieden von Null
 
-
 # Füge gefittete Werte zum Datensatz hinzu
 dtDEconfirmed[, yhat_lme := fitted(mod_lme)]
 
@@ -192,6 +187,73 @@ dt_plot_measures <- merge(DT_measures[measure %in% vars_fixed, .(gueltig_ab, bun
 p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
 p
 ggsave(filename = "/wales/wirvsvirus/geglaettete_log_rate_mit_schaetzung.png", plot = p, width = 12, height = 8)
+
+
+# Da die Daten Zeitreihen sind sind die Beobachtungen natürich nicht i.i.d.
+layout(matrix(1:dtDEconfirmed[, uniqueN(bundesland)], nrow = 4))
+lapply(dtDEconfirmed[, unique(bundesland)], function (x) acf(dtDEconfirmed[bundesland == x, number_log_smooth], main = x))
+
+# Berücksichtigung der Korrelationsstruktur der Zeitreihen durch Modellierung mit nlme::lme funktioniert nicht da s nicht konvergiert.  Stattdessen wird mit Differenzierung gearbeitet
+dtDEconfirmed[, number_log_smooth_diff := number_log_smooth - shift(number_log_smooth), by = bundesland]
+
+# Autokorrelation ist noch vorhanden... Sollte vielleicht zweite Differenzen nehmen
+layout(matrix(1:dtDEconfirmed[, uniqueN(bundesland)], nrow = 4))
+lapply(dtDEconfirmed[, unique(bundesland)], function (x) acf(dtDEconfirmed[bundesland == x, number_log_smooth_diff], na.action = na.omit, main = x))
+
+f_lme_diff <- as.character(f_lme)
+f_lme_diff[2] <- "number_log_smooth_diff"
+f_lme_diff <- formula(paste(f_lme_diff[c(2, 1, 3)], collapse = ""))
+mod_lme_diff <- lmer(f_lme_diff, data = dtDEconfirmed)
+summary(mod_lme_diff)
+
+# Füge gefittete Werte zum Datensatz hinzu
+dtDEconfirmed[!is.na(number_log_smooth_diff), yhat_lme_diff := fitted(mod_lme_diff)]
+dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, rate = number_log_smooth_diff, estimate = yhat_lme_diff)], id.vars = c("bundesland", "day"))
+
+p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
+p
+
+
+
+
+
+# Versuch mit Differenzen weiten Grades
+dtDEconfirmed[, number_log_smooth_diff2 := number_log_smooth_diff - shift(number_log_smooth_diff), by = bundesland]
+
+# Autokorrelation ist noch vorhanden... Sollte vielleicht zweite Differenzen nehmen
+layout(matrix(1:dtDEconfirmed[, uniqueN(bundesland)], nrow = 4))
+lapply(dtDEconfirmed[, unique(bundesland)], function (x) acf(dtDEconfirmed[bundesland == x, number_log_smooth_diff2], na.action = na.omit, main = x))
+
+f_lme_diff2 <- as.character(f_lme)
+f_lme_diff2[2] <- "number_log_smooth_diff2"
+f_lme_diff2 <- formula(paste(f_lme_diff2[c(2, 1, 3)], collapse = ""))
+mod_lme_diff2 <- lmer(f_lme_diff2, data = dtDEconfirmed)
+summary(mod_lme_diff2)
+
+# Füge gefittete Werte zum Datensatz hinzu
+dtDEconfirmed[!is.na(number_log_smooth_diff2), yhat_lme_diff2 := fitted(mod_lme_diff2)]
+dt_plot <- melt(dtDEconfirmed[, .(bundesland, day, rate = number_log_smooth_diff2, estimate = yhat_lme_diff2)], id.vars = c("bundesland", "day"))
+
+p <- ggplot(dt_plot, aes(x = day, y = value, col = variable)) + geom_hline(yintercept = 1, col = "red", lty = 2) + geom_line() + geom_vline(data = dt_plot_measures, aes(xintercept = day, lty = measure)) + facet_wrap(~ bundesland, scales = "free_y")
+p
+
+
+
+# Regressionscoeffizienten visualisieren
+coefs <- summary(mod_lme)$coefficients[-1, ]
+
+# Offene Fragen (Basti?)
+# Zeit seit Eifüḧrung der Maßnahmen auf 14/14 beschränken wg. Inkubationszeit?
+# Bevölkerugsdichte hinzunehmen?
+
+
+layout(1:3)
+plot(dtDEconfirmed$day, residuals(mod_lme)); abline(0, 0, col = 2, lty = 2)
+plot(dtDEconfirmed[!is.na(number_log_smooth_diff), day], residuals(mod_lme_diff)); abline(0, 0, col = 2, lty = 2)
+plot(dtDEconfirmed[!is.na(number_log_smooth_diff2), day], residuals(mod_lme_diff2)); abline(0, 0, col = 2, lty = 2)
+
+
+
 
 
 
