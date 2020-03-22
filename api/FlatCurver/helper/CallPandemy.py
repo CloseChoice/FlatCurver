@@ -30,9 +30,6 @@ class CallPandemy:
         self.pop_bundeslaender = OrderedDict(sorted(pop_df.set_index('Bundesland').to_dict()['Einwohner'].items()))
         self.population_germany = sum(self.pop_bundeslaender.values())
 
-    def construct_time_dependent_beta(self, beta_dct, timesteps):
-        return arrange_dates(beta_dct, timesteps=timesteps)
-
     def call_simulation_bundeslaender(self, beta_dct, gamma, delta, timesteps):
         with open(self.PATH_TO_DEFAULT_JSON, 'r') as f:
             default_params = json.load(f)
@@ -41,7 +38,6 @@ class CallPandemy:
         betas = self.create_matrices(updated_params['beta'], timesteps)
         gammas = self.create_matrices(updated_params['gamma'], timesteps)
         deltas = self.create_matrices(updated_params['delta'], timesteps)
-        import pdb; pdb.set_trace()
         N = np.array(list(self.pop_bundeslaender.values()))
 
         pandemic_caller = PandemicSimulatorMulti(beta=betas, gamma=gammas, delta=deltas, N=N, group_names=list(self.pop_bundeslaender.keys()), timesteps=timesteps)
@@ -59,28 +55,25 @@ class CallPandemy:
             df_agg[f'{status}_Deutschland'] = df[[col for col in df.columns if status in col]].sum(1)
         return df_agg
 
+    @staticmethod
+    def rename_cols(df, string_to_replace):
+        new_colnames = [re.sub(f'_{string_to_replace}$', '', col) for col in df.columns]
+        df.columns = new_colnames
+        return df
+
     def get_correct_json_bundeslaender(self, df):
         result_dct = {}
         norm = matplotlib.colors.Normalize(vmin=0.6, vmax=1, clip=True)
         mapper = cm.ScalarMappable(norm=norm, cmap=cm.RdYlGn)
-        for bundesland in list(self.pop_bundeslaender.keys()) + ['Deutschland']:
+        for bundesland in list(self.pop_bundeslaender.keys()):
             cols_bundesland = [col for col in df.columns if bundesland in col]
             df_bl = df[cols_bundesland + ['Timestamp']]
-            new_colnames = [re.sub(f'_{bundesland}$', '', col) for col in df_bl.columns]
-            df_bl.columns = new_colnames
-            df_bl['InfectedRatio'] = df_bl['Infectious']/df_bl.sum(1)  # inefficient but should work, problem is that Deutschland is not in population csv
-            df_bl['Color'] = df_bl['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1-x), keep_alpha=False).upper())
+            df_bl = self.rename_cols(df_bl, bundesland)
+            df_bl['InfectedRatio'] = df_bl['Infectious']/self.pop_bundeslaender[bundesland]
+            df_bl['Color'] = df_bl['InfectedRatio'].apply(lambda x: matplotlib.colors.to_hex(mapper.to_rgba(1-x),
+                                                                                             keep_alpha=False).upper())
             result_dct[bundesland] = df_bl.to_dict(orient='list')
         return result_dct
-
-    def convert_to_hex(self, df):
-        df['Color'] = df['InfectedRatio']
-        norm = matplotlib.colors.Normalize(vmin=0, vmax=0.4, clip=True)
-        mapper = cm.ScalarMappable(norm=norm, cmap=cm.RdYlGn)
-
-        for v in [0.2, 0.4]:
-            print(matplotlib.colors.to_hex(mapper.to_rgba(v), keep_alpha=False).upper())
-
 
     def update_params(self, ordered_params, beta, gamma, delta):
         #TODO: update logic für Jsons schreiben: bspw. {'2020-01-01': 1, '2020-02-01': 4} und das update so aussieht {'2020-01-15':2} dann nur sachen nach dem 2020-01-15 überschreiben
@@ -96,9 +89,6 @@ class CallPandemy:
         for ind, val in params.iterrows():
             arr.append(np.diag(val))
         return arr
-
-
-
 
     def calculate_values_neighbors(self, beta, gamma, delta, N):
         """helper function to create the beta, gamma and delta matrices. This takes a scalar beta, gamma and delta
@@ -118,27 +108,27 @@ class CallPandemy:
         N_lst = np.array([N, self.NEIGHBORS_INHABITANTS])
         return beta_lst, gamma_lst, delta_lst, N_lst
 
-    def call_simulation_germany(self, beta_dct, gamma=None, delta=None, timesteps=None):
+    @staticmethod
+    def construct_time_dependent_params(timesteps, *args):
+        return [arrange_dates(param, timesteps) for param in args]
+
+    def call_simulation_germany(self, beta, gamma=None, delta=None, timesteps=None):
         gamma = gamma or self.DEFAULT_GAMMA_DCT
         delta = delta or self.DEFAULT_DELTA_DCT
         timesteps = timesteps or self.DEFAULT_TIMESTEPS
-        beta_lst = self.construct_time_dependent_beta(beta_dct, timesteps=timesteps)
-        gamma_lst = self.construct_time_dependent_beta(gamma, timesteps=timesteps)
-        delta_lst = self.construct_time_dependent_beta(delta, timesteps=timesteps)
+        beta_lst, gamma_lst, delta_lst = self.construct_time_dependent_params(timesteps, beta, gamma, delta)
         beta_ng, gamma_ng, delta_ng, N_ng = self.calculate_values_neighbors(beta_lst, gamma_lst, delta_lst,
                                                                             self.population_germany)
         pandemic_caller = PandemicSimulatorMulti(beta=beta_ng, gamma=gamma_ng, delta=delta_ng, N=N_ng,
-                                                 group_names=['Germany', 'Neighbors'], timesteps=timesteps)
+                                                 group_names=['Germany', 'Nachbarlaender'], timesteps=timesteps)
         pandemic_caller.set_y0([N_ng[0]-1, N_ng[1]-1000, 0, 0, 1, 1000, 0, 0])
 
         df = pandemic_caller.simulate_extract_df()
-        df = df[[col for col in df.columns if 'Germany' in col]]
+        df = df[[col for col in df.columns if 'Deutschland' in col]]
+        df = self.rename_cols(df, 'Deutschland')
         adjusted_df = self.adjust_dataframe_for_export(df)
-        return self.dump_to_json(adjusted_df)
-
-    def dump_to_json(self, df):
-        dct = df.to_dict(orient='list')
-        return json.dumps(dct)
+        df_as_dict = {'Deutschland': adjusted_df.to_dict(orient='list')}
+        return json.dumps(df_as_dict)
 
     def adjust_dataframe_for_export(self, df):
         df = df.reset_index().rename(columns={'index': 'Timestamp'})

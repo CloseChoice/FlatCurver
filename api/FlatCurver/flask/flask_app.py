@@ -15,9 +15,12 @@ def hello_world():
 def simulate():
     from FlatCurver.helper.CallPandemy import CallPandemy
     json = request.get_json()
+    json_ger = json.pop('Deutschland')
     caller = CallPandemy()
-    result = caller.call_simulation_bundeslaender(json, gamma={}, delta={}, timesteps=200)
-    return result
+    result_bl = caller.call_simulation_bundeslaender(json, gamma={}, delta={}, timesteps=200)
+    result_ger = caller.call_simulation_germany(json_ger, gamma={}, delta={}, timesteps=200)
+    result_bl.update(result_ger)
+    return result_bl
 
 @app.route('/debug', methods=['POST', 'GET'])
 def debug():
