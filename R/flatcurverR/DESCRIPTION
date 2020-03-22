@@ -1,0 +1,9 @@
+Package: flatcurverR
+Title: Estimate effects of restrictions for combating COVID-19
+Version: 0.1
+Authors@R: person("Arne", "Kaldhusdal", email = "arne.kaldhusdal@gmail.com", role = c("aut", "cre"))
+Description: Functions for reading data pertaining to the spreading and controlling of COVID-19 in Germany and estimating the effects of imposed restrictions by the government(s).
+Depends: R (>= 3.4.3)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
