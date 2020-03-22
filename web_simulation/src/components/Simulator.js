@@ -152,7 +152,7 @@ class Simulator extends React.Component {
                         <TableCell>
                           <b>Maßnahme</b>
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="center">
                           <b>Umsetzung</b>
                         </TableCell>
                         <TableCell align="right">
