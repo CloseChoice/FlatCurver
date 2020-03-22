@@ -124,7 +124,7 @@ class Simulator extends React.Component {
           <Grid item container xs={7} spacing={4}>
             <Grid item xs={12}>
               <Typography variant="h4">
-                #WirvsVirus Simulator - How to flatten the curve!
+                #WirVsVirus Simulator - How to flatten the curve!
               </Typography>
             </Grid>
             <Grid item xs={12}>
