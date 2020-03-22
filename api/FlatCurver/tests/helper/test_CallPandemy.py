@@ -19,20 +19,16 @@ class TestCallPandemy(unittest.TestCase):
         cls.ordered_betas = OrderedDict({"Baden-Wuerttemberg":  {"2020-01-27":  1, "2020-02-25": 1.5}, "Bayern":  {"2020-01-27":  4, "2020-03-01": 1.7}})
         path = os.path.dirname(os.path.abspath(__file__))
         data_json_path = os.path.join(path, 'data.json')
-        cls.all_betas = json.load(open(data_json_path))
-        cls.all_betas_de = cls.all_betas.update(Deutschland=cls.beta_dct)
+        cls.all_betas = json.load(open(data_json_path, 'r'))
+        cls.jsondata = json.load(open(os.path.join(path, 'data_flask.json'), 'r'))
 
     def test_call_simulation_germany(self):
         caller = CallPandemy()
-        json = caller.call_simulation_germany(self.beta_dct)
-        assert json
+        result = caller.call_simulation_germany(self.beta_dct, gamma={}, delta={}, timesteps=200)
+        assert result
 
     def test_online_api(self):
-        response = requests.post(self.url + '/simulate', json=self.beta_dct)
-        assert response
-
-    def test_online_api_all(self):
-        response = requests.post(self.url + '/simulate', json=self.all_betas_de)
+        response = requests.post(self.url + '/simulate', json=self.jsondata)
         assert response
 
     def test_online_api_debug(self):
@@ -41,7 +37,7 @@ class TestCallPandemy(unittest.TestCase):
 
     def test_call_simulation_bundeslaender(self):
         caller = CallPandemy()
-        caller.call_simulation_bundeslaender(beta_dct=self.all_betas, gamma={}, delta={}, timesteps=400)
+        caller.call_simulation_bundeslaender(self.all_betas, gamma={}, delta={}, timesteps=400)
 
     def test_create_matrices(self):
         caller = CallPandemy()
@@ -55,10 +51,9 @@ class TestCallPandemy(unittest.TestCase):
         # TODO: improve this test. Check how flask is usually tested and use this
         from FlatCurver.helper.CallPandemy import CallPandemy
         SIMULATED_TIMESTEPS = 200
-        jsondata = json.load(open('data_flask.json', 'r'))
-        json_ger = jsondata.pop('Deutschland')
+        json_ger = self.jsondata.pop('Deutschland')
         caller = CallPandemy()
-        result_bl = caller.call_simulation_bundeslaender(jsondata, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
+        result_bl = caller.call_simulation_bundeslaender(self.jsondata, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
         result_ger = caller.call_simulation_germany(json_ger, gamma={}, delta={}, timesteps=SIMULATED_TIMESTEPS)
         result_bl.update(result_ger)
 
