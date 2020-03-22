@@ -15,7 +15,7 @@ const MapLayout = {
         border: "#ffffff",
         source: {
           type: "FeatureCollection",
-          state: "Baden-Württemberg",
+          state: "Baden-Wuerttemberg",
           features: [
             {
               geometry: {
@@ -2922,7 +2922,7 @@ const MapLayout = {
         color: "rgb(178, 233, 156)",
         source: {
           type: "FeatureCollection",
-          state: "Thüringen",
+          state: "Thueringen",
           features: [
             {
               geometry: {
@@ -3100,7 +3100,7 @@ const MapData = [
     ],
     marker: { size: 6, color: "white", opacity: 0 },
     text: [
-      "Baden-Württemberg<br>Population: 10075500",
+      "Baden-Wuerttemberg<br>Population: 10075500",
       "Bayern<br>Population: 12542000",
       "Brandenburg<br>Population: 2500000",
       "Berlin<br>Population: 3469000",
@@ -3115,7 +3115,7 @@ const MapData = [
       "Sachsen<br>Population: 4143000",
       "Sachsen-Anhalt<br>Population: 2331000",
       "Schleswig-Holstein<br>Population: 2833000",
-      "Thüringen<br>Population: 2231000"
+      "Thueringen<br>Population: 2231000"
     ],
     hoverinfo: "text",
     showlegend: false
