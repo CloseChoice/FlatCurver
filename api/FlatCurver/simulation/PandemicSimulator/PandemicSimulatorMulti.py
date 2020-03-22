@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from copy import copy
 
+
 from .PandemicSimulator import PandemicSimulator
 
 
