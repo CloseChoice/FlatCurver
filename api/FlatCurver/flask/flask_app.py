@@ -27,3 +27,6 @@ def debug():
         return dict(text=str(json))
     except Exception as e:
         return dict(text='ERROR:\n' + str(e))
+
+if __name__ == "__main__":
+    app.run(debug=True, host='localhost', port=8051, threaded=True)
