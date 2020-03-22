@@ -52,8 +52,8 @@ class SimulationProvider extends Component {
     }
     console.log("payload:", payload);
     Backend.runSimulation(payload).then(results => {
-      this.setState({ results: results, running: false });
       console.log("Backend.runSimulation:", results);
+      this.setState({ results: results, running: false });
     });
   }
 

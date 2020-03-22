@@ -61,21 +61,24 @@ function setDescriptionOfState(mapData, name, text) {
   mapData[0].text[index] = `${name}<br>${text}`;
 }
 
-function generateMapData(results, selectedRegion) {
+function generateMapData(results, selectedRegion, selectedTimeStamp) {
   const mapData = Object.assign(MapData, {});
   for (let region of Regions) {
     if (region.label !== "Deutschland") {
+      const timeStampIndex = results[region.label]["Timestamp"].findIndex(
+        c => c === selectedTimeStamp.toISOString().split("T")[0]
+      );
       setDescriptionOfState(
         mapData,
         region.label,
         `Infiziert: ${Math.round(
-          results[region.label]["Infectious"].slice(-1)[0]
+          results[region.label]["Infectious"][timeStampIndex]
         )}<br>Genesen: ${Math.round(
-          results[region.label]["Recovered"].slice(-1)[0]
+          results[region.label]["Recovered"][timeStampIndex]
         )}<br>Verstorben: ${Math.round(
-          results[region.label]["Dead"].slice(-1)[0]
+          results[region.label]["Dead"][timeStampIndex]
         )}<br>Empfänglich: ${Math.round(
-          results[region.label]["Susceptible"].slice(-1)[0]
+          results[region.label]["Susceptible"][timeStampIndex]
         )}`
       );
     }
@@ -87,7 +90,7 @@ function setColorOfState(mapLayout, name, color) {
   mapLayout.mapbox.layers.find(c => c.source.state === name).color = color;
 }
 
-function generateMapLayout(results, selectedRegion) {
+function generateMapLayout(results, selectedRegion, selectedTimeStamp) {
   const mapLayout = Object.assign(MapLayout, {
     width: 750,
     height: 580,
@@ -100,11 +103,14 @@ function generateMapLayout(results, selectedRegion) {
     }
   });
   for (let region of Regions) {
+    const timeStampIndex = results[region.label]["Timestamp"].findIndex(
+      c => c === selectedTimeStamp.toISOString().split("T")[0]
+    );
     if (region.label !== "Deutschland") {
       setColorOfState(
         mapLayout,
         region.label,
-        results[region.label]["Color"].slice(-1)[0]
+        results[region.label]["Color"][timeStampIndex]
       );
     }
   }
@@ -128,9 +134,19 @@ class MapView extends React.Component {
     const { results } = this.props.simulation;
     const { selectedRegion } = this.props;
 
+    console.log(selectedRegion);
+
     const curvesData = generateCurveData(results, selectedRegion);
-    const mapData = generateMapData(results, selectedRegion);
-    const mapLayout = generateMapLayout(results, selectedRegion);
+    const mapData = generateMapData(
+      results,
+      selectedRegion,
+      this.props.selectedTimeStamp
+    );
+    const mapLayout = generateMapLayout(
+      results,
+      selectedRegion,
+      this.props.selectedTimeStamp
+    );
 
     return (
       <Grid item xs={5} container>

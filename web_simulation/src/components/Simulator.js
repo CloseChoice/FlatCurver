@@ -71,7 +71,8 @@ class Simulator extends React.Component {
     }
     this.state = {
       actions: actions,
-      selectedRegion: Regions[0]
+      selectedRegion: Regions[0],
+      selectedTimeStamp: new Date()
     };
     console.log(actions);
   }
@@ -108,9 +109,13 @@ class Simulator extends React.Component {
     });
   };
 
+  onSelectTimeStamp = timeStamp => {
+    this.setState({ selectedTimeStamp: timeStamp });
+  };
+
   render() {
     const { running } = this.props.simulation;
-    const { selectedRegion, actions } = this.state;
+    const { selectedRegion, actions, selectedTimeStamp } = this.state;
     return (
       <Container maxWidth="xl" style={{ paddingTop: 30 }}>
         {running && (
@@ -226,11 +231,12 @@ class Simulator extends React.Component {
                 </div>
               </TableContainer>
             </Grid>
-            <TimeLine />
+            <TimeLine onSelectTimeStamp={this.onSelectTimeStamp} />
           </Grid>
           <MapView
             selectedRegion={selectedRegion}
             onSelectRegion={this.onMapSelectRegion}
+            selectedTimeStamp={selectedTimeStamp}
           />
         </Grid>
       </Container>
