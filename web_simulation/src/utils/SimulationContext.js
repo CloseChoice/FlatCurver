@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import dummy_data from "./dummy.json";
+import dummy_data from "./dummy_results.json";
 
 const SimulationContext = React.createContext();
 

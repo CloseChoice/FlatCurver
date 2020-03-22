@@ -81,22 +81,23 @@ class Simulator extends React.Component {
     });
   };
 
-  onChangeSlider = (e, val, selectedRegion, action) => {
+  onChangeSlider = async (e, val, selectedRegion, action) => {
     console.log("onChangeSlider:", { val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].intensity = val;
     this.setState({ actions });
   };
 
-  onChangeDate = (date, val, selectedRegion, action) => {
+  onChangeDate = async (date, val, selectedRegion, action) => {
     console.log("onChangeDate:", { date, val, selectedRegion, action });
     const { actions } = this.state;
     actions[selectedRegion.label][action.label].date = date;
     this.setState({ actions });
+    this.updateSimulation();
   };
 
   updateSimulation = async () => {
-    await Backend.runSimulation();
+    this.props.simulation.run(this.state.actions);
   };
 
   onMapSelectRegion = label => {
@@ -179,7 +180,7 @@ class Simulator extends React.Component {
                                   getAriaValueText={valuetext}
                                   aria-labelledby="discrete-slider"
                                   valueLabelDisplay="auto"
-                                  step={10}
+                                  step={5}
                                   marks={marks}
                                   min={0}
                                   max={100}

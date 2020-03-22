@@ -63,12 +63,23 @@ function setDescriptionOfState(mapData, name, text) {
 
 function generateMapData(results, selectedRegion) {
   const mapData = Object.assign(MapData, {});
-  console.log(mapData);
-  setDescriptionOfState(
-    mapData,
-    "Bayern",
-    `Empfänglich: ${2}<br>Verstorben: ${2}<br>Infiziert: ${2}<br>Genesen: ${2}<br>`
-  );
+  for (let region of Regions) {
+    if (region.label !== "Deutschland") {
+      setDescriptionOfState(
+        mapData,
+        region.label,
+        `Verstorben: ${Math.round(
+          results[region.label]["Dead"].slice(-1)[0]
+        )}<br>Infiziert: ${Math.round(
+          results[region.label]["Infectious"].slice(-1)[0]
+        )}<br>Genesen: ${Math.round(
+          results[region.label]["Recovered"].slice(-1)[0]
+        )}<br>Empfänglich: ${Math.round(
+          results[region.label]["Susceptible"].slice(-1)[0]
+        )}`
+      );
+    }
+  }
   return mapData;
 }
 
