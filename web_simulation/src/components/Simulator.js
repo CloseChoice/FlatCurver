@@ -144,7 +144,7 @@ class Simulator extends React.Component {
                   >
                     {Regions.map((reg, index) => (
                       <MenuItem key={reg.label} value={index}>
-                        {reg.label}
+                        {reg.label.replace("ue", "ü")}
                       </MenuItem>
                     ))}
                   </Select>
