@@ -65,7 +65,7 @@ class PandemicSimulator:
     def plotting_standards(self, ax):
         ax.set_xlabel('Time /days')
         ax.set_ylabel('Number (percent of total population)')
-        #ax.set_ylim(0.9, 1.1)#CHANGED
+        ax.set_ylim(0, 1.2)
         ax.yaxis.set_tick_params(length=0)
         ax.xaxis.set_tick_params(length=0)
         ax.grid(b=True, which='major', c='w', lw=2, ls='-')

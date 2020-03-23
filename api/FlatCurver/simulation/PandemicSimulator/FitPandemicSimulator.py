@@ -53,6 +53,18 @@ class FitPandemicSimulator(PandemicSimulator):
         beta_est = self.fit_SEIR()
         df = self.simulate_extract_df()
         return(df)
+        
+    def plotting_standards(self, ax):
+        ax.set_xlabel('Time /days')
+        ax.set_ylabel('Number (percent of total population)')
+        #ax.set_ylim(0.9, 1.1)#CHANGED
+        ax.yaxis.set_tick_params(length=0)
+        ax.xaxis.set_tick_params(length=0)
+        ax.grid(b=True, which='major', c='w', lw=2, ls='-')
+        legend = ax.legend()
+        legend.get_frame().set_alpha(0.5)
+        for spine in ('top', 'right', 'bottom', 'left'):
+            ax.spines[spine].set_visible(False)
 
     def plot(self, sol):
         # TODO
