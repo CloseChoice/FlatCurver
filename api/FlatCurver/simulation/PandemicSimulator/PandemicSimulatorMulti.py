@@ -10,7 +10,7 @@ from .PandemicSimulator import PandemicSimulator
 class PandemicSimulatorMulti(PandemicSimulator):
 
     def __init__(self, beta, gamma, delta, N, group_names, timesteps):
-        # inheriting suer init leads to problems, since y0 is set in PandemicSimulator and constructs the y0 as N-1 while N can be a list in here
+        # inheriting super init leads to problems, since y0 is set in PandemicSimulator and constructs the y0 as N-1 while N can be a list in here
         self.beta = self.make_time_dependent(beta, timesteps)
         self.gamma = self.make_time_dependent(gamma, timesteps)
         self.delta = self.make_time_dependent(delta, timesteps)
@@ -34,6 +34,9 @@ class PandemicSimulatorMulti(PandemicSimulator):
         assert len(self.beta) == self.timesteps
         assert len(self.gamma) == self.timesteps
         assert len(self.delta) == self.timesteps
+        assert self.beta[0].shape[0] == len(self.group_names)
+        assert self.gamma[0].shape[0] == len(self.group_names)
+        assert self.delta[0].shape[0] == len(self.group_names)
 
     def simulate_SEIR(self):
         # TODO: make this unnecessary. See todo in line 12

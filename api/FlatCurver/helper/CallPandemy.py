@@ -25,16 +25,30 @@ class CallPandemy:
     _package_directory = os.path.dirname(os.path.abspath(__file__))
     PATH_TO_CSV = os.path.join(_package_directory, '../../../data/einwohner_bundeslaender.csv')
     PATH_TO_DEFAULT_JSON = os.path.join(_package_directory, 'default_params.json')
+
     def __init__(self):
         pop_df = pd.read_csv(self.PATH_TO_CSV, sep='\t')
         self.pop_bundeslaender = OrderedDict(sorted(pop_df.set_index('Bundesland').to_dict()['Einwohner'].items()))
         self.population_germany = sum(self.pop_bundeslaender.values())
 
+    def assertions(self, ordered_params):
+        message = f"Their are either too many or to few keys in the default json at {self.PATH_TO_DEFAULT_JSON}. " \
+                  f"Following keys have been found:"
+        assert list(ordered_params['beta'].keys()) == list(self.pop_bundeslaender.keys()),\
+            f"{message}_{list(ordered_params['beta'].keys())}"
+        assert list(ordered_params['gamma'].keys()) == list(self.pop_bundeslaender.keys()), \
+            f"{message}_{list(ordered_params['gamma'].keys())}"
+        assert list(ordered_params['delta'].keys()) == list(self.pop_bundeslaender.keys()), \
+            f"{message}_{list(ordered_params['delta'].keys())}"
+
+
     def call_simulation_bundeslaender(self, beta_dct, gamma, delta, timesteps):
         with open(self.PATH_TO_DEFAULT_JSON, 'r') as f:
             default_params = json.load(f)
             ordered_params = OrderedDict(sorted(default_params.items()))
+        self.assertions(ordered_params)
         updated_params = self.update_params(ordered_params, beta_dct, gamma, delta)
+
         betas = self.create_matrices(updated_params['beta'], timesteps)
         gammas = self.create_matrices(updated_params['gamma'], timesteps)
         deltas = self.create_matrices(updated_params['delta'], timesteps)
