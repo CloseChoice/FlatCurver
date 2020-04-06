@@ -17,7 +17,7 @@ read_border_closures(file, cutoff_date)
 read_restrictions(file, border_data, cutoff_date)
 }
 \arguments{
-\item{file}{Path to csv file containing the data.}
+\item{file}{Path to csv file containing the data.  If no file path is specified, data are lodad via a Statworx API.}
 
 \item{cutoff_date}{The cut-off data at which the effects should be estimated. (infection data and restrictions imposed after this date are not used).}
 

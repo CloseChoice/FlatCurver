@@ -124,6 +124,8 @@ add_growth_rates <- function (infections) {
   # Calculate change rate of smoothed log numbers and smooth these as well
   infections[, lograte_smooth := (number_log_smooth - shift(number_log_smooth, 1)) / (shift(number_log_smooth, 1) - shift(number_log_smooth, 2)), by = bundesland]
   infections[!is.na(lograte_smooth), lograte_smooth2 := predict(loess(lograte_smooth ~ day, span = 10 / .N)), by = bundesland]
+  # Added 2020-04-06
+  infections[, number_log_smooth_d1 := c(NA,diff(number_log_smooth)), by = label]
   return(infections)
 }
 

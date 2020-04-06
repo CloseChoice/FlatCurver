@@ -17,9 +17,9 @@
 #' @import lme4
 #' @importFrom stats formula predict qnorm
 #' @export
-fit_lme <- function (data, map_restrictions, cutoff_date) {
+fit_lme <- function (data, map_restrictions, cutoff_date, response = "lograte_smooth2") {
   # Response variable
-  response <- "lograte_smooth2"
+  #response <- "lograte_smooth2"
   # Variables with random effect
   vars_random <- c("day")
   # Variables with fixed effect (only restrictions are used where at least 5 percent of the values are > 0)

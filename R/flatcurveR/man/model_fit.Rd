@@ -4,7 +4,8 @@
 \alias{fit_lme}
 \title{Function for estimatind the effects of restrictions on the (smoothed) lograte of the the number of infections}
 \usage{
-fit_lme(data, map_restrictions, cutoff_date)
+fit_lme(data, map_restrictions, cutoff_date,
+  response = "lograte_smooth2")
 }
 \arguments{
 \item{data}{The data table returned from the function \code{add_growth_rates}.}

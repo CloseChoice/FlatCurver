@@ -5,7 +5,7 @@
 #' 
 #' @description Functions for reading data on infections, border closures and further restrictions.
 #' 
-#' @param file Path to csv file containing the data.
+#' @param file Path to csv file containing the data.  If no file path is specified, data are lodad via a Statworx API.
 #' @param cutoff_date The cut-off data at which the effects should be estimated. (infection data and restrictions imposed after this date are not used).
 #' @param border_data A \code{data.table} containing the border closure data returned by the function \code{read_border_closures}.
 #'
@@ -27,12 +27,68 @@ read_map_bundesland <- function (file) {
 
 #' @name read_data
 #' @rdname read_data
+#' @import httr jsonlite
 #' @export
 read_infections <- function (file, cutoff_date) {
   # Argument checks
   if (missing(cutoff_date)) cutoff_date <- as.Date(Sys.Date(), tz = "Europe/Berlin")
   # Read data
-  DT <- fread(file)
+  if (missing(file)) {
+    # Get data from Statworx API
+    raw <- httr::GET(url = "https://api.statworx.com/covid/de", encode = "json")
+    content <- rawToChar(raw$content)
+    DT <- setDT(data.frame(fromJSON(content), stringsAsFactors = FALSE))
+    DT <- DT[cases_cum > 0]
+    states <- data.table(from = c("BadenWürttemberg",
+                                  "Bayern",
+                                  "Berlin",
+                                  "Brandenburg",
+                                  "Bremen",
+                                  "Hamburg",
+                                  "Hessen",
+                                  "MecklenburgVorpommern",
+                                  "Niedersachsen",
+                                  "NordrheinWestfalen",
+                                  "RheinlandPfalz",
+                                  "Saarland",
+                                  "Sachsen",
+                                  "SachsenAnhalt",
+                                  "SchleswigHolstein",
+                                  "Thüringen"),
+                         to = c("Baden-Württemberg",
+                                "Bayern",
+                                "Berlin",
+                                "Brandenburg",
+                                "Bremen",
+                                "Hamburg",
+                                "Hessen",
+                                "Mecklenburg-Vorpommern",
+                                "Niedersachsen",
+                                "Nordrhein-Westfalen",
+                                "Rheinland-Pfalz",
+                                "Saarland",
+                                "Sachsen",
+                                "Sachsen-Anhalt",
+                                "Schleswig-Holstein",
+                                "Thüringen"))
+    DT <- merge(DT, states, by.x = "state", by.y = "from", all.x = TRUE)
+    DT[, lon := as.character(NA)]
+    DT[, lat := as.character(NA)]
+    DT[, recovered := as.integer(NA)]
+    DT[, year := NULL]
+    DT[, month := NULL]
+    DT[, day := NULL]
+    DT[, code := NULL]
+    DT[, cases := NULL]
+    DT[, deaths := NULL]
+    DT[, population := NULL]
+    DT[, state := NULL]
+    setnames(DT, c("country", "cases_cum", "deaths_cum", "to"), c("parent", "confirmed", "deaths", "label"))
+    DT[, parent := "Deutschland"]
+    setcolorder(DT, c("parent", "label", "date", "lon", "lat", "confirmed", "recovered", "deaths"))
+  } else {
+    DT <- fread(file)
+  }
   # Data checks
   COLS <- c("date", "parent", "label", "lon", "lat", "confirmed", "recovered", "deaths")
   if (!all(COLS %in% colnames(DT))) stop(paste0("Specified file must contain the following columns: '", paste0(paste(COLS, collapse = "', '"), "'.")))
