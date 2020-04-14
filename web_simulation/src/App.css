@@ -1,0 +1,16 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #1B1C1F;
+  color: #fff;
+}
+
+.timelineDiv>div>div>ul>li {
+  background-image: unset !important;
+}
+
+body {
+  overflow-x: hidden;
+}

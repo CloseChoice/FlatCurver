@@ -130,3 +130,5 @@ dmypy.json
 
 # PyCharm metadata
 .idea
+api/FlatCurver/flask/data.json
+api/FlatCurver/flask/simulate_bundeslaender.json
